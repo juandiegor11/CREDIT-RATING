@@ -1,11 +1,11 @@
-import { AppSidebar } from "./Components/app-sidebar"
+import { AppSidebar } from "./Components/app-sidebar" 
 import { NavActions } from "./Components/nav-actions"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb"
 import { Separator } from "@/components/ui/separator"
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
-import { DataTableDemo } from "./(pages)/DataTableDemo"
+//import { DataTableDemo } from "./(pages)/DataTableDemo"
 
-export default function Page() {
+export default function Sidebar({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -29,7 +29,8 @@ export default function Page() {
         <div className="flex flex-1 flex-col gap-4 px-4 py-10">
           <div className="mx-auto h-24 w-full max-w-5xl rounded-xl bg-muted/50" ></div>
           <div className="mx-auto h-full w-full max-w-5xl rounded-xl bg-muted/50">
-          <DataTableDemo />
+            {children}
+            {/* <DataTableDemo /> */}
           </div>
         </div>
       </SidebarInset>

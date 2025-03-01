@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import management from "@/public/management.svg"
 
 export default function LoginPage() {
   return (
@@ -44,7 +43,7 @@ export default function LoginPage() {
           </form>
           <div className="relative hidden bg-muted md:block">
             <img
-              src = 'https://defisolutions.com/wp-content/uploads/management-1.png'
+              src="/LoginFondo.jpg"
               alt="Image"
               className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
             />

@@ -15,13 +15,13 @@ import {
   Trash2,
 } from "lucide-react"
 
-import { NavFavorites } from "./nav-favorites"
+//import { NavFavorites } from "./nav-favorites"
 import { NavMain } from "./nav-main"
-import { NavSecondary } from "./nav-secondary"
-import { NavWorkspaces } from "./nav-workspaces"
+//import { NavSecondary } from "./nav-secondary"
+//import { NavWorkspaces } from "./nav-workspaces"
 import { TeamSwitcher } from "./team-switcher"
 import { Sidebar, SidebarContent, SidebarHeader, SidebarRail } from "@/components/ui/sidebar"
-import { title } from "process"
+
 
 // This is sample data.
 const data = {
