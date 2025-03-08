@@ -35,3 +35,6 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 vieo tutorial (https://www.youtube.com/watch?v=r6l-AChINbM&ab_channel=TarreDev)
+    mysql://root:iGqrrVrpZcyEOpOmpwsaVsoIHtzvslcH@yamanote.proxy.rlwy.net:18705/railway
+    mysql://root:iGqrrVrpZcyEOpOmpwsaVsoIHtzvslcH@mysql.railway.internal:3306/railway
+    mysql -h yamanote.proxy.rlwy.net -u root -p iGqrrVrpZcyEOpOmpwsaVsoIHtzvslcH --port 18705 --protocol=TCP railway

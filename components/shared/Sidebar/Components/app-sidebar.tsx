@@ -45,19 +45,22 @@ const data = {
   navMain: [
     {
       title: "Buscar",
-      url: "#",
+      url: "/",
       icon: Search,
+
     },
     {
       title: "Home",
-      url: "#",
+      url: "/",
       icon: Home,
       isActive: true,
+      href : "/",
     },
     {
       title: "CREDITOS",
-      url: "#",
+      url: "/Creditos",
       icon: Sparkles,
+      href : "/Creditos",
     },
     {
       title: "RESULTADOS",
