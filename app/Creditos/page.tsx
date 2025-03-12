@@ -1,39 +1,78 @@
 'use client'
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { getDocumentTypes } from '@/services/api';
+import { Label } from "@/components/ui/label";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { createCreditRequest, updateCreditRequest, deleteCreditRequest, getCreditRequests } from '@/services/api';
 
 export default function CreditRequests() {
     
   const [requests, setRequests] = useState([]);
+  const [tab, setTab] = useState("cliente");
   const [open, setOpen] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null);
   const [formData, setFormData] = useState({
     fullName: "",
-    documentType: "",
+    documentTypePrefix: "",
     documentNumber: "",
     requestedAmount: "",
+    ciiu: "",
+    sector: "",
+    subsector: "",
+    department: "",
+    city: "",
+    companyClassificationModel: "",
+    companyClassification: "",
+    agency: "",
+    lastIncome: "",
+    companySize: "",
+    legalRepDocumentTypePrefix: "",
+    legalRepDocumentNumber: "",
+    legalRepFirstName: "",
+    legalRepSecondName: "",
+    legalRepFirstSurname: "",
+    legalRepSecondSurname: ""
   });
 
-  const documentTypes = ["Cédula", "Pasaporte", "Licencia de Conducir", "Tarjeta de Identidad"];
+  const [documentTypes, setDocumentTypes] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const types = await getDocumentTypes();
+      setDocumentTypes(types);
+      const requestsData = await getCreditRequests();
+      setRequests(requestsData);
+    };
+
+    fetchData();
+  }, []);
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSave = () => {
+  const handleSelectChange = (name, prefix) => {
+    setFormData({ ...formData, [`${name}Prefix`]: prefix });
+  };
+
+  const handleSave = async () => {
     if (editingIndex !== null) {
+      await updateCreditRequest(requests[editingIndex].id, formData);
       const updatedRequests = [...requests];
       updatedRequests[editingIndex] = formData;
       setRequests(updatedRequests);
       setEditingIndex(null);
     } else {
-      setRequests([...requests, formData]);
+      const newRequest = await createCreditRequest(formData);
+      setRequests([...requests, newRequest]);
     }
-    setFormData({ fullName: "", documentType: "", documentNumber: "", requestedAmount: "" });
+    resetForm();
     setOpen(false);
   };
 
@@ -43,8 +82,39 @@ export default function CreditRequests() {
     setOpen(true);
   };
 
-  const handleDelete = (index) => {
+  const handleDelete = async (index) => {
+    await deleteCreditRequest(requests[index].id);
     setRequests(requests.filter((_, i) => i !== index));
+  };
+
+  const resetForm = () => {
+    setFormData({ 
+      fullName: "", 
+      documentTypePrefix: "",
+      documentNumber: "", 
+      requestedAmount: "",
+      ciiu: "",
+      sector: "",
+      subsector: "",
+      department: "",
+      city: "",
+      companyClassificationModel: "",
+      companyClassification: "",
+      agency: "",
+      lastIncome: "",
+      companySize: "",
+      legalRepDocumentTypePrefix: "",
+      legalRepDocumentNumber: "",
+      legalRepFirstName: "",
+      legalRepSecondName: "",
+      legalRepFirstSurname: "",
+      legalRepSecondSurname: ""
+    });
+  };
+
+  const getDocumentTypeName = (prefix) => {
+    const type = documentTypes.find(type => type.Prefijo === prefix);
+    return type ? type.Tipo_Documento : "Seleccione tipo";
   };
 
   return (
@@ -61,7 +131,7 @@ export default function CreditRequests() {
                 <TableHead>Nombre Completo</TableHead>
                 <TableHead>Tipo Documento</TableHead>
                 <TableHead>Número Documento</TableHead>
-                <TableHead>Monto Solicitado</TableHead>
+                <TableHead>Ingresos Último Cierre</TableHead>
                 <TableHead>Acciones</TableHead>
               </TableRow>
             </TableHeader>
@@ -69,9 +139,9 @@ export default function CreditRequests() {
               {requests.map((request, index) => (
                 <TableRow key={index}>
                   <TableCell>{request.fullName}</TableCell>
-                  <TableCell>{request.documentType}</TableCell>
+                  <TableCell>{getDocumentTypeName(request.documentTypePrefix)}</TableCell>
                   <TableCell>{request.documentNumber}</TableCell>
-                  <TableCell>{request.requestedAmount}</TableCell>
+                  <TableCell>{request.lastIncome}</TableCell>
                   <TableCell>
                     <Button onClick={() => handleEdit(index)} variant="outline" className="mr-2">Editar</Button>
                     <Button onClick={() => handleDelete(index)} variant="destructive">Eliminar</Button>
@@ -84,19 +154,107 @@ export default function CreditRequests() {
       </Card>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
+        <DialogContent className="max-h-screen overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editingIndex !== null ? "Editar Solicitud" : "Nueva Solicitud"}</DialogTitle>
           </DialogHeader>
-          <Input placeholder="Nombre Completo" name="fullName" value={formData.fullName} onChange={handleInputChange} className="mb-2" />
-          <select name="documentType" value={formData.documentType} onChange={handleInputChange} className="mb-2 w-full p-2 border rounded">
-            <option value="">Seleccione Tipo de Documento</option>
-            {documentTypes.map((type, index) => (
-                <option key={index} value={type}>{type}</option>
-            ))}
-          </select>
-          <Input placeholder="Número de Documento" name="documentNumber" value={formData.documentNumber} onChange={handleInputChange} className="mb-2" />
-          <Input placeholder="Monto Solicitado" name="requestedAmount" value={formData.requestedAmount} onChange={handleInputChange} className="mb-2" />
+          <Tabs value={tab} onValueChange={setTab} className="w-full max-w-2xl mx-auto p-4">
+            <TabsList className="mb-4 flex justify-center">
+              <TabsTrigger value="cliente">Cliente</TabsTrigger>
+              <TabsTrigger value="representante">Representante Legal</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="cliente">
+              <Card>
+                <CardContent className="space-y-4 p-4">
+                  <Label>Tipo de documento</Label>
+                  <Select name="documentType" value={formData.documentTypePrefix} onValueChange={(value) => {
+                    handleSelectChange('documentType', value);
+                  }}>
+                    <SelectTrigger>
+                      <SelectValue>{getDocumentTypeName(formData.documentTypePrefix)}</SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {documentTypes.map(type => (
+                        <SelectItem key={type.id} value={type.Prefijo}>{type.Tipo_Documento}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  
+                  <Label>Número de documento</Label>
+                  <Input type="text" name="documentNumber" value={formData.documentNumber} onChange={handleInputChange} />
+                  
+                  <Label>Nombre</Label>
+                  <Input type="text" name="fullName" value={formData.fullName} onChange={handleInputChange} />
+                  
+                  <Label>CIIU Actividad Principal</Label>
+                  <Input type="text" name="ciiu" value={formData.ciiu} onChange={handleInputChange} />
+                  
+                  <Label>Sector</Label>
+                  <Input type="text" name="sector" value={formData.sector} onChange={handleInputChange} />
+                  
+                  <Label>Subsector</Label>
+                  <Input type="text" name="subsector" value={formData.subsector} onChange={handleInputChange} />
+                  
+                  <Label>Departamento del cliente</Label>
+                  <Input type="text" name="department" value={formData.department} onChange={handleInputChange} />
+                  
+                  <Label>Ciudad del cliente</Label>
+                  <Input type="text" name="city" value={formData.city} onChange={handleInputChange} />
+                  
+                  <Label>Clasificación empresa para Modelo de Default</Label>
+                  <Input type="text" name="companyClassificationModel" value={formData.companyClassificationModel} onChange={handleInputChange} />
+                  
+                  <Label>Clasificación empresa</Label>
+                  <Input type="text" name="companyClassification" value={formData.companyClassification} onChange={handleInputChange} />
+                  
+                  <Label>Agencia</Label>
+                  <Input type="text" name="agency" value={formData.agency} onChange={handleInputChange} />
+                  
+                  <Label>Ingresos Ultimo cierre (En Miles)</Label>
+                  <Input type="number" name="lastIncome" value={formData.lastIncome} onChange={handleInputChange} />
+                  
+                  <Label>Tamaño Empresa</Label>
+                  <Input type="text" name="companySize" value={formData.companySize} onChange={handleInputChange} />
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="representante">
+              <Card>
+                <CardContent className="space-y-4 p-4">
+                  <Label>Tipo de documento</Label>
+                  <Select name="legalRepDocumentType" value={formData.legalRepDocumentTypePrefix} onValueChange={(value) => {
+                    handleSelectChange('legalRepDocumentType', value);
+                  }}>
+                    <SelectTrigger>
+                      <SelectValue>{getDocumentTypeName(formData.legalRepDocumentTypePrefix)}</SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {documentTypes.map(type => (
+                        <SelectItem key={type.id} value={type.Prefijo}>{type.Tipo_Documento}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  
+                  <Label>Número de documento</Label>
+                  <Input type="text" name="legalRepDocumentNumber" value={formData.legalRepDocumentNumber} onChange={handleInputChange} />
+                  
+                  <Label>Primer Nombre</Label>
+                  <Input type="text" name="legalRepFirstName" value={formData.legalRepFirstName} onChange={handleInputChange} />
+                  
+                  <Label>Segundo Nombre</Label>
+                  <Input type="text" name="legalRepSecondName" value={formData.legalRepSecondName} onChange={handleInputChange} />
+                  
+                  <Label>Primer Apellido</Label>
+                  <Input type="text" name="legalRepFirstSurname" value={formData.legalRepFirstSurname} onChange={handleInputChange} />
+                  
+                  <Label>Segundo Apellido</Label>
+                  <Input type="text" name="legalRepSecondSurname" value={formData.legalRepSecondSurname} onChange={handleInputChange} />
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
           <DialogFooter>
             <Button onClick={handleSave}>{editingIndex !== null ? "Actualizar" : "Guardar"}</Button>
           </DialogFooter>
@@ -105,8 +263,3 @@ export default function CreditRequests() {
     </div>
   );
 }
-{/*nit cedula cedulaestranjeria pasaporte 
-codigo ciu
-
---registro info financiaera 
-*/}

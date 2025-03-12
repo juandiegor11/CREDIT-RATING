@@ -1,14 +1,66 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "mysql"
-  url      = env("DATABASE_URL")
+  url      = "mysql://root:iGqrrVrpZcyEOpOmpwsaVsoIHtzvslcH@yamanote.proxy.rlwy.net:18705/railway"
+}
+
+model tipo_Documento {
+  id             Int    @id @default(autoincrement())
+  Tipo_Documento String
+  Prefijo        String
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model user {
+  username    String    @db.VarChar(16)
+  email       String?   @db.VarChar(255)
+  password    String    @db.VarChar(32)
+  create_time DateTime? @default(now()) @db.Timestamp(0)
+
+  @@ignore
+}
+
+model CIIU_Clase {
+  id_clase              Int                     @id
+  descripcion           String                  @db.VarChar(255)
+  clase2                String?                 @db.VarChar(100)
+  clase_servicios       String?                 @db.VarChar(100)
+  CIIU_Sector_Subsector CIIU_Sector_Subsector[]
+}
+
+model CIIU_Sector_Subsector {
+  id_sector     Int         @id @default(autoincrement())
+  id_ciiu_clase Int?
+  sector        String      @db.VarChar(100)
+  subsector     String      @db.VarChar(100)
+  CIIU_Clase    CIIU_Clase? @relation(fields: [id_ciiu_clase], references: [id_clase], onDelete: NoAction, onUpdate: NoAction, map: "CIIU_Sector_Subsector_ibfk_1")
+
+  @@index([id_ciiu_clase], map: "CIIU_Sector_Subsector_ibfk_1")
+}
+
+model CreditRequest {
+  id                         Int     @id @default(autoincrement())
+  fullName                   String  @db.VarChar(255)
+  documentTypePrefix         String  @db.VarChar(50)
+  documentNumber             String  @db.VarChar(50)
+  requestedAmount            Float   @db.Float
+  ciiu                       String  @db.VarChar(50)
+  sector                     String  @db.VarChar(100)
+  subsector                  String  @db.VarChar(100)
+  department                 String  @db.VarChar(100)
+  city                       String  @db.VarChar(100)
+  companyClassificationModel String  @db.VarChar(100)
+  companyClassification      String  @db.VarChar(100)
+  agency                     String  @db.VarChar(100)
+  lastIncome                 Float   @db.Float
+  companySize                String  @db.VarChar(100)
+  legalRepDocumentTypePrefix String  @db.VarChar(50)
+  legalRepDocumentNumber     String  @db.VarChar(50)
+  legalRepFirstName          String  @db.VarChar(100)
+  legalRepSecondName         String? @db.VarChar(100)
+  legalRepFirstSurname       String  @db.VarChar(100)
+  legalRepSecondSurname      String? @db.VarChar(100)
 }
