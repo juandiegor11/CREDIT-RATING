@@ -47,20 +47,36 @@ model CreditRequest {
   documentTypePrefix         String  @db.VarChar(50)
   documentNumber             String  @db.VarChar(50)
   requestedAmount            Float   @db.Float
-  ciiu                       String  @db.VarChar(50)
-  sector                     String  @db.VarChar(100)
-  subsector                  String  @db.VarChar(100)
-  department                 String  @db.VarChar(100)
-  city                       String  @db.VarChar(100)
+  ciiu                       Int
+  sector                     Int?
+  subsector                  String? @db.VarChar(1000)
+  department                 Int?
+  city                       Int?
   companyClassificationModel String  @db.VarChar(100)
   companyClassification      String  @db.VarChar(100)
   agency                     String  @db.VarChar(100)
   lastIncome                 Float   @db.Float
-  companySize                String  @db.VarChar(100)
-  legalRepDocumentTypePrefix String  @db.VarChar(50)
-  legalRepDocumentNumber     String  @db.VarChar(50)
-  legalRepFirstName          String  @db.VarChar(100)
+  companySize                String? @db.VarChar(100)
+  legalRepDocumentTypePrefix String? @db.VarChar(50)
+  legalRepDocumentNumber     String? @db.VarChar(50)
+  legalRepFirstName          String? @db.VarChar(100)
   legalRepSecondName         String? @db.VarChar(100)
-  legalRepFirstSurname       String  @db.VarChar(100)
+  legalRepFirstSurname       String? @db.VarChar(100)
   legalRepSecondSurname      String? @db.VarChar(100)
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model CiudadDepartamento_flat {
+  Departamento       String? @db.Text
+  Municipio          String? @db.Text
+  CodigoDepartamento Int?
+  CodigoMunicipio    Int     @id
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model DatosAdministrador {
+  Id        Int     @id
+  Variables String? @db.Text
+  Anio      String? @db.Text
+  Valor     String? @db.Text
 }

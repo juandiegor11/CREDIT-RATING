@@ -300,7 +300,6 @@ export default function EstadoFinanciero() {
                 <Button 
                     onClick={() => {
                         handleCalculate();
-                        console.log(data);
                         // Navigate to the next section
                        // window.location.href = "/";
                     }} 

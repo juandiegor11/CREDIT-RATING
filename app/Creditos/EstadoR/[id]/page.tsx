@@ -137,6 +137,42 @@ export default function Creditos() {
         setData(calculateData(data));
     };
 
+    const saveDataToDatabase = async (data) => {
+        const response = await fetch('/api/saveData', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        });
+    
+        if (!response.ok) {
+            throw new Error('Error saving data');
+        }
+    
+        return response.json();
+    };
+    const handleSave = async () => {
+        try {
+            const formattedData = data.map((row, rowIndex) => ({
+                category: row.category,
+                creditId: 1,
+                idcategory:  1 + '' + rowIndex,
+                values: row.values.map((value, index) => ({
+                    year: new Date().getFullYear() - 4 + index,
+                    value: Number(value)
+                }))
+            }));
+            debugger;
+            //console.log('Data to save:', formattedData);
+            //await saveDataToDatabase(formattedData);
+            alert('Data saved successfully');
+        } catch (error) {
+            console.error('Error saving data:', error);
+            alert('Error saving data');
+        }
+    };
+
     return (
         <div className="overflow-x-auto p-4">
 
@@ -186,7 +222,6 @@ export default function Creditos() {
                 <Button 
                     onClick={() => {
                         handleCalculate();
-                        console.log(data);
                         // Navigate to the next section
                         window.location.href = "Creditos/Estadof";
                     }} 
@@ -195,6 +230,7 @@ export default function Creditos() {
                 >
                     Siguiente
                 </Button>
+                <Button onClick={handleSave} className="bg-green-500 text-white">Guardar</Button>
             </div>
         </div>
     );

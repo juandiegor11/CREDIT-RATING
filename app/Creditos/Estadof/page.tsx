@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 const initialData = [
-    { category: "Efectivo y Equivalentes de Efectivo", values: ["152", 72, 249, 484], editable: true },
+    { category: "Efectivo y Equivalentes de Efectivo", values: [152, 72, 249, 484], editable: true },
     { category: "Inversiones Temporales", values: ["", "", "", ""], editable: true },
     { category: "Clientes y Ctas Ctes Comerciales", values: [3131, 3552, 4109, 3866], editable: true },
     { category: "Inventarios", values: ["", "", "", ""], editable: true },
@@ -15,7 +15,7 @@ const initialData = [
     { category: "Propiedad Planta y Equipo", values: [5455, 13833, 17466, 18207], editable: true },
     { category: "Depreciación Acumulada", values: ["", -5312, -6426, -5312], editable: true },
     { category: "Propiedad Planta y Equipo Neto", values: ["", "", "", ""], calculated: true },
-    { category: "Inversiones Permanentes", values: ["104", "104", "104", "104"], editable: true },
+    { category: "Inversiones Permanentes", values: [104, 104, 104, 104], editable: true },
     { category: "Activos Intangibles", values: ["", "", "", ""], editable: true },
     { category: "Otros Activos No Corrientes", values: [292, "", "", ""], editable: true },
     { category: "Inv.Disp.Venta / Valorizaciones", values: ["", "", "", ""], editable: true },
@@ -147,6 +147,42 @@ export default function EstadoFinanciero() {
     const handleCalculate = () => {
         setData(calculateData(data));
     };
+    
+    const saveDataToDatabase = async (data) => {
+        const response = await fetch('/api/saveData', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        });
+    
+        if (!response.ok) {
+            throw new Error('Error saving data');
+        }
+    
+        return response.json();
+    };
+    const handleSave = async () => {
+        try {
+            const formattedData = data.map((row, rowIndex) => ({
+                category: row.category,
+                idcategory:  2 + '' + rowIndex,
+                creditId: 1,
+                values: row.values.map((value, index) => ({
+                    year: new Date().getFullYear() - 4 + index,
+                    value: Number(value)
+                }))
+            }));
+            debugger;
+            //console.log('Data to save:', formattedData);
+            //await saveDataToDatabase(formattedData);
+            alert('Data saved successfully');
+        } catch (error) {
+            console.error('Error saving data:', error);
+            alert('Error saving data');
+        }
+    };
 
     return (
         <div className="overflow-x-auto p-4">
@@ -226,7 +262,7 @@ export default function EstadoFinanciero() {
                 <Button 
                     onClick={() => {
                         handleCalculate();
-                        console.log(data);
+                        handleSave();
                         // Navigate to the next section
                        // window.location.href = "/";
                     }} 
@@ -234,6 +270,11 @@ export default function EstadoFinanciero() {
                     disabled={!data.some(row => row.calculated)}
                 >
                     Siguiente
+                </Button>
+                <Button 
+                    onClick={handleSave} 
+                    className="bg-green-500 text-white">
+                        Guardar
                 </Button>
             </div>
         </div>
