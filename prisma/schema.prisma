@@ -80,3 +80,21 @@ model DatosAdministrador {
   Anio      String? @db.Text
   Valor     String? @db.Text
 }
+
+model Balances {
+  id                  Int                  @id @default(autoincrement())
+  Cliente_id          Int?
+  Categoria           String?              @db.VarChar(1000)
+  Anio                Int?
+  Valor               Decimal?             @db.Decimal(15, 2)
+  Categoria_id        Int?
+  Categorias_Balances Categorias_Balances? @relation(fields: [Categoria_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Categoria_id")
+
+  @@index([Categoria_id], map: "Categoria_id_idx")
+}
+
+model Categorias_Balances {
+  id       Int        @id
+  nombre   String?    @db.VarChar(1000)
+  Balances Balances[]
+}

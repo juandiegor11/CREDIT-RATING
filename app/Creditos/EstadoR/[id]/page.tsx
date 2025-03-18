@@ -4,6 +4,10 @@ import React, { useState } from "react";
 import { Table } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { getBalance, createBalance } from '@/services/routes/balances'; 
+import { useParams } from "next/navigation";
+import { Progress } from "@radix-ui/react-progress";
+import { useRouter } from "next/navigation";
 
 const dataEstadoResultados = [
     { category: "Ingresos de Actividades Ordinarias", values: [11751, "", "", ""], editable: true },
@@ -33,7 +37,11 @@ const dataEstadoResultados = [
 ];
 
 export default function Creditos() {
+    const { id } = useParams();
+    const router = useRouter();
     const [data, setData] = useState(dataEstadoResultados);
+    const [loading, setLoading] = useState(false);
+    const [calculado, setCalculado] = useState(false);
 
     const formatNumber = (value) => {
         return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
@@ -135,47 +143,62 @@ export default function Creditos() {
 
     const handleCalculate = () => {
         setData(calculateData(data));
+        setCalculado(true);
     };
 
     const saveDataToDatabase = async (data) => {
-        const response = await fetch('/api/saveData', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data),
-        });
-    
-        if (!response.ok) {
-            throw new Error('Error saving data');
-        }
-    
+        const response = await createBalance(JSON.stringify(data));
         return response.json();
     };
+
     const handleSave = async () => {
+        setLoading(true);
         try {
             const formattedData = data.map((row, rowIndex) => ({
                 category: row.category,
-                creditId: 1,
-                idcategory:  1 + '' + rowIndex,
+                Cliente_id: id ? parseNumber(id) : null,
+                idcategory: 1 + '' + rowIndex,
                 values: row.values.map((value, index) => ({
                     year: new Date().getFullYear() - 4 + index,
                     value: Number(value)
                 }))
             }));
             debugger;
-            //console.log('Data to save:', formattedData);
-            //await saveDataToDatabase(formattedData);
-            alert('Data saved successfully');
+            const response = await saveDataToDatabase(formattedData);
+            if (response.ok) {
+                alert('Data saved successfully');
+            } else {
+                alert('Error saving data');
+            }
+            //alert('Data saved successfully');
+            setCalculado(false);
         } catch (error) {
             console.error('Error saving data:', error);
             alert('Error saving data');
+            setCalculado(false);
+        } finally {
+            setTimeout(() => {
+            setLoading(false);
+            router.push(`/Creditos/Estadof/${id}`);
+            }, 6000);
+            setCalculado(false);
+            
         }
     };
 
     return (
         <div className="overflow-x-auto p-4">
-
+            {loading && (
+                <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50">
+                    <div className="bg-white p-4 rounded shadow-lg">
+                        <Progress 
+                            value={100} 
+                            className="w-full" 
+                        />
+                        <p className="text-center mt-2">Guardando datos...</p>
+                    </div>
+                </div>
+            )}
             <Table className="min-w-full border border-gray-100">
                 <thead>
                     <tr className="bg-green-300 text-black-100">
@@ -184,7 +207,6 @@ export default function Creditos() {
                         <th className="text-left p-1"></th>
                         <th className="text-left p-1"></th>
                         <th className="text-left p-3">MILLONES DE PESOS</th>
-
                     </tr>
                     <tr className="bg-green-300 text-black">
                         <th className="text-left p-2">Estado de Resultados</th>
@@ -220,17 +242,10 @@ export default function Creditos() {
             <div className="flex justify-between mb-4 mt-4">
                 <Button onClick={handleCalculate} className="bg-blue-500 text-white">Calcular</Button>
                 <Button 
-                    onClick={() => {
-                        handleCalculate();
-                        // Navigate to the next section
-                        window.location.href = "Creditos/Estadof";
-                    }} 
-                    className="bg-green-500 text-white" 
-                    disabled={!data.some(row => row.calculated)}
-                >
-                    Siguiente
-                </Button>
-                <Button onClick={handleSave} className="bg-green-500 text-white">Guardar</Button>
+                    onClick={handleSave} 
+                    className="bg-green-500 text-white"
+                    disabled={!calculado}
+                >Siguiente</Button>
             </div>
         </div>
     );
