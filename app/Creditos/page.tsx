@@ -8,7 +8,6 @@ import CreditRequestDialog from './Components/CreditRequestDialog';
 import { getDocumentTypes } from '@/services/routes/documentType';
 import { getCiiuClases } from '@/services/routes/ciiuClase';
 import { getCiiuSectorByClase } from '@/services/routes/ciiuSector';
-import { deleteBalance } from '@/services/routes/balances';
 import { calcularTamanoEmpresa } from "./services/calcuralTamanoEmpresa";
 import { getDepartments, getMunicipalitiesByDepartment, getCiuDepartamentoById } from '@/services/routes/ciuDepartamento';
 import { createCreditRequest, updateCreditRequest, deleteCreditRequest, getCreditRequests } from '@/services/routes/creditRequest';
@@ -141,7 +140,7 @@ const CreditRequests = () => {
     const { name, value } = e.target;
     setFormData(prevFormData => ({
       ...prevFormData,
-      [name]: name === 'requestedAmount' || name === 'lastIncome' || name === 'ciiu' ? parseFloat(value ? value : 0) : value
+      [name]: name === 'requestedAmount' || name === 'lastIncome' || name === 'ciiu' ? parseInt(value ? value : 0) : value
     }));
   }, []);
 
@@ -209,6 +208,11 @@ const CreditRequests = () => {
     return type ? type.Tipo_Documento : "Seleccione tipo";
   }, [documentTypes]);
 
+  const handleDelete = useCallback(async (index) => {
+    await deleteCreditRequest(requests[index].id);
+    setRequests(prevRequests => prevRequests.filter((_, i) => i !== index));
+  },[setRequests]);
+
   const resetForm = useCallback(() => {
     setFormData({
       fullName: "",
@@ -239,14 +243,19 @@ const CreditRequests = () => {
     <div className="p-6">
       <Card>
         <CardContent>
-          <div className="flex justify-between items-center mb-4">
+          <div className="flex justify-between items-center mb-5">
             <h2 className="text-xl font-bold">Solicitudes de Crédito</h2>
-            <Button onClick={() => setOpen(true)}>CREAR SOLICITUD</Button>
+            <Button className="mt-3" onClick={
+              () => {
+                resetForm();
+                setOpen(true);
+              }
+            }>CREAR SOLICITUD</Button>
           </div>
           <CreditRequestsTable 
-            requests={requests} 
+            requests={requests}
             onEdit={handleEdit} 
-            onDelete={deleteCreditRequest}
+            onDelete={handleDelete}
             getDocumentTypeName={getDocumentTypeName}
             onViewEstadoResultados={handleViewEstadoResultados}
           />

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -46,7 +47,6 @@ const CreditRequestDialog: React.FC<CreditRequestDialogProps> = ({
   handleSave,
   TamaEmpresa,
   documentTypes,
-  ciiuOptions,
   sector,
   subsector,
   departments,
@@ -54,9 +54,6 @@ const CreditRequestDialog: React.FC<CreditRequestDialogProps> = ({
   clasifEmpresa,
   cities,
   getDocumentTypeName,
-  ciiuSearchTerm,
-  setCiiuSearchTerm,
-  filteredCiiuOptions
 }) => (
   <Dialog open={open} onOpenChange={setOpen}>
     <DialogContent className="max-h-screen overflow-y-auto">
