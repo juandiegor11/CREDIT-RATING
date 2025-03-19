@@ -4,9 +4,9 @@ import React, { useState } from "react";
 import { Table } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { getBalance, createBalance } from '@/services/routes/balances'; 
+import { createBalance } from '@/services/routes/balances'; 
 import { useParams } from "next/navigation";
-import { Progress } from "@radix-ui/react-progress";
+import { Progress } from "@/components/ui/progress";
 import { useRouter } from "next/navigation";
 
 const dataEstadoResultados = [
@@ -148,7 +148,7 @@ export default function Creditos() {
 
     const saveDataToDatabase = async (data) => {
         const response = await createBalance(JSON.stringify(data));
-        return response.json();
+        return response;
     };
 
     const handleSave = async () => {
@@ -165,22 +165,19 @@ export default function Creditos() {
             }));
             debugger;
             const response = await saveDataToDatabase(formattedData);
-            if (response.ok) {
-                alert('Data saved successfully');
+            if (response.status === 200) {
+                setLoading(false);
+                router.push(`/Creditos/Estadof/${id}`);
             } else {
-                alert('Error saving data');
+                alert('Error server - saving data');
             }
             //alert('Data saved successfully');
             setCalculado(false);
         } catch (error) {
             console.error('Error saving data:', error);
-            alert('Error saving data');
+            alert('Error server - saving data');
             setCalculado(false);
         } finally {
-            setTimeout(() => {
-            setLoading(false);
-            router.push(`/Creditos/Estadof/${id}`);
-            }, 6000);
             setCalculado(false);
             
         }

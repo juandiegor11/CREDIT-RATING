@@ -6,7 +6,14 @@ import { FaDeleteLeft } from "react-icons/fa6";
 
 
 interface CreditRequestsTableProps {
-  requests: any[];
+  requests: {
+    fullName: string;
+    documentTypePrefix: string;
+    documentNumber: string;
+    lastIncome: number;
+    id: number;
+    Balance: number;
+  }[];
   onEdit: (index: number) => void;
   onDelete: (index: number) => Promise<void>;
   getDocumentTypeName: (prefix: string) => string;
@@ -44,7 +51,11 @@ const CreditRequestsTable: React.FC<CreditRequestsTableProps> = ({
             <Button onClick={() => onDelete(index)} variant="destructive">
               <FaDeleteLeft  /> {/* Icono de edición */}
             </Button>
-            <Button onClick={() => onViewEstadoResultados(request.id)} variant="ghost">
+            <Button 
+              onClick={() => onViewEstadoResultados(request.id)} 
+              variant="ghost"
+              disabled = {request.Balance === 1? true : false}
+            >
               <FaBalanceScale /> {/* Icono de balance */}
             </Button>
           </TableCell>

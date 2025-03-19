@@ -5,8 +5,9 @@ import { Table } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useParams, useRouter } from "next/navigation";
-import { Progress } from "@radix-ui/react-progress";
+import { Progress } from "@/components/ui/progress";
 import { createBalance } from "@/services/routes/balances";
+import { updateCreditRequest } from "@/services/routes/creditRequest";
 
 const initialData = [
     { category: "Efectivo y Equivalentes de Efectivo", values: [152, 72, 249, 484], editable: true },
@@ -158,8 +159,10 @@ export default function EstadoFinanciero() {
     
     const saveDataToDatabase = async (data) => {
         const response = await createBalance(JSON.stringify(data));
+        await updateCreditRequest(id, JSON.stringify({ Balance: 1 }));
         return response;
     };
+
     const handleSave = async () => {
         setLoading(true);
         try {
@@ -173,9 +176,10 @@ export default function EstadoFinanciero() {
                 }))
             }));
             const response = await saveDataToDatabase(formattedData);
-            if (response.status == 200) {
+            if (response.status === 200) {
                 setCalculado(false);
-                router.push('')
+                setLoading(false);
+                router.push('/Creditos');
             } else {
                 alert('Error saving data');
             }
@@ -185,10 +189,6 @@ export default function EstadoFinanciero() {
             alert('Error saving data');
             setCalculado(false);
         } finally {
-            setTimeout(() => {
-            setLoading(false);
-            router.push(`/Creditos/Estadof/${id}`);
-            }, 6000);
             setCalculado(false);
             
         }

@@ -85,3 +85,9 @@ export const getDatosbyAnio = async (codAnio) => {
     },
   });
 };
+
+export const deleteBalanceByClient= async (id) => {
+  return await prisma.balances.deleteMany({
+    where: { Cliente_id : Number(id) },
+  });
+};

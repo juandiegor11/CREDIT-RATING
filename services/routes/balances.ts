@@ -42,4 +42,10 @@ export const getBalance = async () => {
       method: 'DELETE',
     });
   };
+
+  export const deleteBalanceByClient = async(id) =>{
+    await fetch(`/api/balance/cliente/${id}`, {
+      method: 'DELETE',
+    });
+  }
   

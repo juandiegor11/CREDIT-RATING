@@ -63,6 +63,7 @@ model CreditRequest {
   legalRepSecondName         String? @db.VarChar(100)
   legalRepFirstSurname       String? @db.VarChar(100)
   legalRepSecondSurname      String? @db.VarChar(100)
+  Balance                    Int?
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
