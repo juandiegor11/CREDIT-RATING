@@ -10,7 +10,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogDescription,
-  //AlertDialogTrigger,
   AlertDialogContent,
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
@@ -46,12 +45,12 @@ const CreditRequestsTable: React.FC<CreditRequestsTableProps> = ({
   }, []);
 
   const confirmDelete = useCallback(async () => {
-    if (deleteIndex !== null) {
+    if (deleteIndex !== null && requests[deleteIndex]) {
       await onDelete(deleteIndex);
       setOpen(false);
       setDeleteIndex(null);
     }
-  }, [deleteIndex, onDelete]);
+  }, [deleteIndex, onDelete, requests]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(value);
@@ -82,7 +81,7 @@ const CreditRequestsTable: React.FC<CreditRequestsTableProps> = ({
                   <FaEdit /> {/* Icono de edición */}
                 </Button>
                 <Button variant="destructive" onClick={() => handleDelete(index)}>
-                <FaDeleteLeft  /> 
+                  <FaDeleteLeft  /> 
                 </Button>
                 <Button
                   onClick={() => onViewEstadoResultados(request.id)}

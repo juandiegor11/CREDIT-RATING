@@ -10,12 +10,12 @@ import { Progress } from "@/components/ui/progress";
 import { useRouter } from "next/navigation";
 
 const dataEstadoResultados = [
-    { category: "Ingresos de Actividades Ordinarias", values: [11751, "", "", ""], editable: true },
-    { category: "Costo de Ventas", values: [9019, "", "", ""], editable: true },
+    { category: "Ingresos de Actividades Ordinarias", values: ["", "", "", ""], editable: true },
+    { category: "Costo de Ventas", values: ["", "", "", ""], editable: true },
     { category: "% Costo de Ventas / Ventas", values: ["", "", "", ""], calculated: true },
-    { category: "Gastos de Ventas", values: [172, "", "", ""], editable: true },
+    { category: "Gastos de Ventas", values: ["", "", "", ""], editable: true },
     { category: "% Gastos de Ventas / Ventas", values: ["", "", "", ""], calculated: true },
-    { category: "Gastos de Administración", values: [1381, "", "", ""], editable: true },
+    { category: "Gastos de Administración", values: ["", "", "", ""], editable: true },
     { category: "% Gastos de Admon / Ventas", values: ["", "", "", ""], calculated: true },
     { category: "Utilidad Op. Antes de Deprec.", values: ["", "", "", ""], calculated: true },
     { category: "% Ut. Op. Antes de Dep. / Ventas", values: ["", "", "", ""], calculated: true },
@@ -23,8 +23,8 @@ const dataEstadoResultados = [
     { category: "AMORTIZACIÓN", values: ["", "", "", ""], editable: true },
     { category: "Utilidad Operacional", values: ["", "", "", ""], calculated: true },
     { category: "% Utilidad Operacional / Ventas", values: ["", "", "", ""], calculated: true },
-    { category: "Ingresos Financieros", values: ["153", "", "", ""], editable: true },
-    { category: "Gastos Financieros", values: ["490", "", "", ""], editable: true },
+    { category: "Ingresos Financieros", values: ["", "", "", ""], editable: true },
+    { category: "Gastos Financieros", values: ["", "", "", ""], editable: true },
     { category: "% Gastos Financieros / Ventas", values: ["", "", "", ""], calculated: true },
     { category: "OTROS INGRESOS Y EGRESOS", values: ["", "", "", ""], editable: true },
     { category: "CORRECCIÓN MONETARIA", values: ["", "", "", ""], editable: true },
@@ -32,7 +32,7 @@ const dataEstadoResultados = [
     { category: "Impuestos", values: ["", "", "", ""], editable: true },
     { category: "Utilidad Neta", values: ["", "", "", ""], calculated: true },
     { category: "% Utilidad Neta  / Ventas", values: ["", "", "", ""], calculated: true },
-    { category: "OTROS RESULTADOS INTEGRALES (NETO)", values: [0, 8, 0, 0], editable: true },
+    { category: "OTROS RESULTADOS INTEGRALES (NETO)", values: ["", "", "", ""], editable: true },
     { category: "Total Resultado Integral del Periodo", values: ["", "", "", ""], calculated: true }
 ];
 

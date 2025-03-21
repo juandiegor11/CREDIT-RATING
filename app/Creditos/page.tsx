@@ -9,10 +9,10 @@ import { getDocumentTypes } from '@/services/routes/documentType';
 import { getCiiuClases } from '@/services/routes/ciiuClase';
 import { getCiiuSectorByClase } from '@/services/routes/ciiuSector';
 import { calcularTamanoEmpresa } from "./services/calcuralTamanoEmpresa";
+import { deleteBalanceByClient } from "@/services/routes/balances";
 import { getDepartments, getMunicipalitiesByDepartment, getCiuDepartamentoById } from '@/services/routes/ciuDepartamento';
 import { createCreditRequest, updateCreditRequest, deleteCreditRequest, getCreditRequests } from '@/services/routes/creditRequest';
 import { useRouter } from 'next/navigation';
-
 const CreditRequests = () => {
   const router = useRouter();
   const [requests, setRequests] = useState([]);
@@ -209,9 +209,14 @@ const CreditRequests = () => {
   }, [documentTypes]);
 
   const handleDelete = useCallback(async (index) => {
-    await deleteCreditRequest(requests[index].id);
-    setRequests(prevRequests => prevRequests.filter((_, i) => i !== index));
-  },[setRequests]);
+    if (requests.length > 0 && requests[index]) {
+      await deleteCreditRequest(requests[index].id);
+      await deleteBalanceByClient(requests[index].id);
+      setRequests(prevRequests => prevRequests.filter((_, i) => i !== index));
+    } else {
+      console.error("Invalid index or empty requests array");
+    }
+  }, [requests, setRequests]);
 
   const resetForm = useCallback(() => {
     setFormData({
@@ -248,6 +253,7 @@ const CreditRequests = () => {
             <Button className="mt-3" onClick={
               () => {
                 resetForm();
+                setEditingIndex(null); // Restablecer el estado editingIndex
                 setOpen(true);
               }
             }>CREAR SOLICITUD</Button>

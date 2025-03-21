@@ -2,8 +2,6 @@ import { NextResponse } from 'next/server';
 import { deleteBalanceByClient } from '../../../../../services/requests/balances';
 
 
-
-
 export async function DELETE(req: Request, { params }) {
   const { id } = params;
 
