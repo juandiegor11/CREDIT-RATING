@@ -8,6 +8,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Progress } from "@/components/ui/progress";
 import { createBalance } from "@/services/routes/balances";
 import { updateCreditRequest } from "@/services/routes/creditRequest";
+import { useYears } from "../../context/YearsContext";
 
 const initialData = [
     { category: "Efectivo y Equivalentes de Efectivo", values: [152, 72, 249, 484], editable: true },
@@ -56,6 +57,7 @@ export default function EstadoFinanciero() {
     const [loading, setLoading] = useState(false);
     const router = useRouter();
     const { id } = useParams();
+    const { years, selectedYears, toggleYear } = useYears();
 
     const formatNumber = (value) => {
         return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
@@ -268,6 +270,7 @@ export default function EstadoFinanciero() {
                                                 value={formatNumber(value)}
                                                 onChange={(e) => handleChange(rowIndex, colIndex, e.target.value)}
                                                 className="w-full bg-gray-100 text-black p-1 rounded focus:outline-none text-right"
+                                                disabled={!selectedYears[years[colIndex]]}
                                             />
                                         )}
                                     </td>

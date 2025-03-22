@@ -8,6 +8,9 @@ import { createBalance } from '@/services/routes/balances';
 import { useParams } from "next/navigation";
 import { Progress } from "@/components/ui/progress";
 import { useRouter } from "next/navigation";
+import { useYears } from "../../context/YearsContext";
+
+//const years = [new Date().getFullYear() - 4, new Date().getFullYear() - 3, new Date().getFullYear() - 2, new Date().getFullYear() - 1];
 
 const dataEstadoResultados = [
     { category: "Ingresos de Actividades Ordinarias", values: ["", "", "", ""], editable: true },
@@ -42,7 +45,18 @@ export default function Creditos() {
     const [data, setData] = useState(dataEstadoResultados);
     const [loading, setLoading] = useState(false);
     const [calculado, setCalculado] = useState(false);
+    //const [enabledYears, setEnabledYears] = useState({});
+    const { years, selectedYears, toggleYear, resetYears } = useYears();
 
+    // const handleCheckboxChange = (year) => {
+    //     setEnabledYears((prev) => ({
+    //         ...prev,
+    //         [year]: !prev[year]
+    //     }));
+    // };
+    const handleCheckboxChange = (year) => {
+        toggleYear(year); // Almacenar la selección en el contexto
+    };
     const formatNumber = (value) => {
         return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
     };
@@ -151,27 +165,37 @@ export default function Creditos() {
         return response;
     };
 
+    const getFilteredData = () => {
+        return data.map(row => ({
+            category: row.category,
+            values: row.values.filter((_, index) => selectedYears[years[index]])
+        }));
+    };
+
     const handleSave = async () => {
         setLoading(true);
         try {
             const formattedData = data.map((row, rowIndex) => ({
                 category: row.category,
                 Cliente_id: id ? parseNumber(id) : null,
-                idcategory: 1 + '' + rowIndex,
-                values: row.values.map((value, index) => ({
-                    year: new Date().getFullYear() - 4 + index,
-                    value: Number(value)
-                }))
+                idcategory: `1${rowIndex}`,
+                values: row.values
+                    .map((value, index) => ({
+                        year: years[index],  // Año basado en el contexto
+                        value: Number(value),
+                    }))
+                    .filter(entry => selectedYears[entry.year]) // Filtra solo los años seleccionados
             }));
-            debugger;
-            const response = await saveDataToDatabase(formattedData);
-            if (response.status === 200) {
-                setLoading(false);
-                router.push(`/Creditos/Estadof/${id}`);
-            } else {
-                alert('Error server - saving data');
-            }
+            // const response = await saveDataToDatabase(formattedData);
+            // if (response.status === 200) {
+            //     setLoading(false);
+            //     router.push(`/Creditos/Estadof/${id}`);
+            // } else {
+            //     alert('Error server - saving data');
+            // }
             //alert('Data saved successfully');
+            debugger;
+            setLoading(false);
             setCalculado(false);
         } catch (error) {
             console.error('Error saving data:', error);
@@ -207,10 +231,15 @@ export default function Creditos() {
                     </tr>
                     <tr className="bg-green-300 text-black">
                         <th className="text-left p-2">Estado de Resultados</th>
-                        <th className="p-2">{new Date().getFullYear() - 4}</th>
-                        <th className="p-2">{new Date().getFullYear() - 3}</th>
-                        <th className="p-2">{new Date().getFullYear() - 2}</th>
-                        <th className="p-2">{new Date().getFullYear() - 1}</th>
+                        {years.map((year, index) => (
+                            <th key={index} className="p-2">
+                                <input 
+                                    type="checkbox" 
+                                    onChange={() => handleCheckboxChange(year)}
+                                    checked={selectedYears[year] || false}
+                                /> {year}
+                            </th>
+                        ))}
                     </tr>
                 </thead>
                 <tbody>
@@ -228,6 +257,7 @@ export default function Creditos() {
                                             value={formatNumber(value)}
                                             onChange={(e) => handleChange(rowIndex, colIndex, e.target.value)}
                                             className="w-full bg-gray-100 text-black p-1 rounded focus:outline-none text-right"
+                                            disabled={!selectedYears[years[colIndex]]}
                                         />
                                     )}
                                 </td>
