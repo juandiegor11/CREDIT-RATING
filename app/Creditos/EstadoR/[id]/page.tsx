@@ -13,12 +13,12 @@ import { useYears } from "../../context/YearsContext";
 //const years = [new Date().getFullYear() - 4, new Date().getFullYear() - 3, new Date().getFullYear() - 2, new Date().getFullYear() - 1];
 
 const dataEstadoResultados = [
-    { category: "Ingresos de Actividades Ordinarias", values: ["", "", "", ""], editable: true },
-    { category: "Costo de Ventas", values: ["", "", "", ""], editable: true },
+    { category: "Ingresos de Actividades Ordinarias", values: ["", "", "15539", "17774"], editable: true },
+    { category: "Costo de Ventas", values: ["", "", "11502", "13616"], editable: true },
     { category: "% Costo de Ventas / Ventas", values: ["", "", "", ""], calculated: true },
-    { category: "Gastos de Ventas", values: ["", "", "", ""], editable: true },
+    { category: "Gastos de Ventas", values: ["", "", "111", "4"], editable: true },
     { category: "% Gastos de Ventas / Ventas", values: ["", "", "", ""], calculated: true },
-    { category: "Gastos de Administración", values: ["", "", "", ""], editable: true },
+    { category: "Gastos de Administración", values: ["", "", "2117", ""], editable: true },
     { category: "% Gastos de Admon / Ventas", values: ["", "", "", ""], calculated: true },
     { category: "Utilidad Op. Antes de Deprec.", values: ["", "", "", ""], calculated: true },
     { category: "% Ut. Op. Antes de Dep. / Ventas", values: ["", "", "", ""], calculated: true },
@@ -26,10 +26,10 @@ const dataEstadoResultados = [
     { category: "AMORTIZACIÓN", values: ["", "", "", ""], editable: true },
     { category: "Utilidad Operacional", values: ["", "", "", ""], calculated: true },
     { category: "% Utilidad Operacional / Ventas", values: ["", "", "", ""], calculated: true },
-    { category: "Ingresos Financieros", values: ["", "", "", ""], editable: true },
-    { category: "Gastos Financieros", values: ["", "", "", ""], editable: true },
+    { category: "Ingresos Financieros", values: ["", "", "215", ""], editable: true },
+    { category: "Gastos Financieros", values: ["", "", "371", ""], editable: true },
     { category: "% Gastos Financieros / Ventas", values: ["", "", "", ""], calculated: true },
-    { category: "OTROS INGRESOS Y EGRESOS", values: ["", "", "", ""], editable: true },
+    { category: "OTROS INGRESOS Y EGRESOS", values: ["", "-131", "", ""], editable: true },
     { category: "CORRECCIÓN MONETARIA", values: ["", "", "", ""], editable: true },
     { category: "Utilidad Antes de Impuestos", values: ["", "", "", ""], calculated: true },
     { category: "Impuestos", values: ["", "", "", ""], editable: true },
@@ -43,17 +43,10 @@ export default function Creditos() {
     const { id } = useParams();
     const router = useRouter();
     const [data, setData] = useState(dataEstadoResultados);
-    const [loading, setLoading] = useState(false);
     const [calculado, setCalculado] = useState(false);
-    //const [enabledYears, setEnabledYears] = useState({});
-    const { years, selectedYears, toggleYear, resetYears } = useYears();
+    const [loading, setLoading] = useState(false);
+    const { years, selectedYears, toggleYear } = useYears();
 
-    // const handleCheckboxChange = (year) => {
-    //     setEnabledYears((prev) => ({
-    //         ...prev,
-    //         [year]: !prev[year]
-    //     }));
-    // };
     const handleCheckboxChange = (year) => {
         toggleYear(year); // Almacenar la selección en el contexto
     };
@@ -186,13 +179,14 @@ export default function Creditos() {
                     }))
                     .filter(entry => selectedYears[entry.year]) // Filtra solo los años seleccionados
             }));
-            // const response = await saveDataToDatabase(formattedData);
-            // if (response.status === 200) {
-            //     setLoading(false);
-            //     router.push(`/Creditos/Estadof/${id}`);
-            // } else {
-            //     alert('Error server - saving data');
-            // }
+            debugger;
+            const response = await saveDataToDatabase(formattedData);
+            if (response.status === 200) {
+                setLoading(false);
+                router.push(`/Creditos/Estadof/${id}`);
+            } else {
+                alert('Error server - saving data');
+            }
             //alert('Data saved successfully');
             debugger;
             setLoading(false);

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React from 'react';
+import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
@@ -54,7 +54,45 @@ const CreditRequestDialog: React.FC<CreditRequestDialogProps> = ({
   clasifEmpresa,
   cities,
   getDocumentTypeName,
-}) => (
+}) => {
+  const [errors, setErrors] = useState<{ [key: string]: boolean }>({});
+  const validateFields = () => {
+    const newErrors: { [key: string]: boolean } = {};
+    const requiredFields = [
+      'documentTypePrefix', 
+      'documentNumber', 
+      'fullName', 
+      'ciiu', 
+      'department', 
+      'city', 
+      'agency', 
+      'lastIncome', 
+      'companySize',
+      'legalRepDocumentNumber',
+      'legalRepFirstName',
+      'legalRepSecondName',
+      'legalRepFirstSurname',
+      'legalRepSecondSurname'
+    ];
+
+    requiredFields.forEach(field => {
+      if (!formData[field]) {
+        newErrors[field] = true;
+      }
+    });
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSaveClick = () => {
+    if (validateFields()) {
+      handleSave();
+    } else {
+      alert('Por favor complete todos los campos obligatorios, tanto de cliente como representante legal .');
+    }
+  };
+  return(
   <Dialog open={open} onOpenChange={setOpen}>
     <DialogContent className="max-h-screen overflow-y-auto">
       <DialogHeader>
@@ -75,26 +113,27 @@ const CreditRequestDialog: React.FC<CreditRequestDialogProps> = ({
                 name="date" 
                 value={formData.date || new Date().toISOString().split('T')[0]} 
                 onChange={handleInputChange} 
+                className={errors.date ? 'border-red-500' : ''}
               />
               <Label>Tipo de documento</Label>
               <Select name="documentType" value={formData.documentTypePrefix} onValueChange={(value) => {
                 handleSelectChange('documentTypePrefix', value);
-              }}>
+              }} required>
                 <SelectTrigger>
                   <SelectValue>{getDocumentTypeName(formData.documentTypePrefix)}</SelectValue>
                 </SelectTrigger>
                 <SelectContent>
-                  {documentTypes.map(type => (
+                  {documentTypes.filter(type => type.Prefijo === 'NIT').map(type => (
                     <SelectItem key={type.id} value={type.Prefijo}>{type.Tipo_Documento}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
               <Label>Número de documento</Label>
-              <Input type="text" name="documentNumber" value={formData.documentNumber} onChange={handleInputChange} />
+              <Input type="text" name="documentNumber" value={formData.documentNumber} onChange={handleInputChange} required className={errors.documentNumber ? 'border-red-500' : ''} />
               <Label>Nombre</Label>
-              <Input type="text" name="fullName" value={formData.fullName} onChange={handleInputChange} />
+              <Input type="text" name="fullName" value={formData.fullName} onChange={handleInputChange} required className={errors.fullName ? 'border-red-500' : ''} />
               <Label>CIIU Actividad Principal</Label>
-              <Input type="number" name="ciiu" value={formData.ciiu == 0 ? "" : formData.ciiu} onChange={handleInputChange} />
+              <Input type="number" name="ciiu" value={formData.ciiu == 0 ? "" : formData.ciiu} onChange={handleInputChange} required className={errors.ciiu ? 'border-red-500' : ''} />
               <Label>Sector</Label>
               <Input type="text" name="sector" value={sector} disabled />
               <Label>Subsector</Label>
@@ -102,7 +141,7 @@ const CreditRequestDialog: React.FC<CreditRequestDialogProps> = ({
               <Label>Departamento del cliente</Label>
               <Select name="department" value={formData.department} onValueChange={(value) => {
                 handleDepartmentChange(value);
-              }}>
+              }} required>
                 <SelectTrigger>
                   <SelectValue>{formData.department ? `${departments.find(dept => dept.CodigoDepartamento === formData.department)?.Departamento}` : "Seleccione Departamento"}</SelectValue>
                 </SelectTrigger>
@@ -115,7 +154,7 @@ const CreditRequestDialog: React.FC<CreditRequestDialogProps> = ({
               <Label>Ciudad del cliente</Label>
               <Select name="city" value={formData.city} onValueChange={(value) => {
                 handleCityChange(value);
-              }}>
+              }} required>
                 <SelectTrigger>
                   <SelectValue>{formData.city ? `${cities.find(city => city.CodigoMunicipio === formData.city)?.Municipio}` : "Seleccione Ciudad"}</SelectValue>
                 </SelectTrigger>
@@ -132,7 +171,7 @@ const CreditRequestDialog: React.FC<CreditRequestDialogProps> = ({
               <Label>Agencia</Label>
               <Select name="agency" value={formData.agency} onValueChange={(value) => {
                 handleSelectChange('agency', value);
-              }}>
+              }} required>
                 <SelectTrigger>
                   <SelectValue>{formData.agency ? formData.agency : "Seleccione Agencia"}</SelectValue>
                 </SelectTrigger>
@@ -150,10 +189,12 @@ const CreditRequestDialog: React.FC<CreditRequestDialogProps> = ({
                 onChange={async (e) => {
                   await handleInputChange(e);
                   await TamaEmpresa(clasifEmpresa ? clasifEmpresa.toString() : "", parseInt(e.target.value ? e.target.value : "0"));
-                }}
+                }} 
+                required
+                className={errors.lastIncome ? 'border-red-500' : ''}
               />
               <Label>Tamaño Empresa</Label>
-              <Input type="text" name="companySize" value={formData.companySize} onChange={handleInputChange} />
+              <Input type="text" name="companySize" value={formData.companySize} onChange={handleInputChange} required className={errors.companySize ? 'border-red-500' : ''} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -175,13 +216,20 @@ const CreditRequestDialog: React.FC<CreditRequestDialogProps> = ({
                 </SelectContent>
               </Select>
               <Label>Número de documento</Label>
-              <Input type="text" name="legalRepDocumentNumber" value={formData.legalRepDocumentNumber} onChange={handleInputChange} />
+              <Input 
+                type="text" 
+                name="legalRepDocumentNumber" 
+                value={formData.legalRepDocumentNumber}  
+                onChange={handleInputChange} 
+                required 
+                className={errors.legalRepDocumentNumber ? 'border-red-500' : ''} 
+              />
               <Label>Primer Nombre</Label>
-              <Input type="text" name="legalRepFirstName" value={formData.legalRepFirstName} onChange={handleInputChange} />
+              <Input type="text" name="legalRepFirstName" value={formData.legalRepFirstName} onChange={handleInputChange} required className={errors.legalRepFirstName ? 'border-red-500' : ''} />
               <Label>Segundo Nombre</Label>
-              <Input type="text" name="legalRepSecondName" value={formData.legalRepSecondName} onChange={handleInputChange} />
+              <Input type="text" name="legalRepSecondName" value={formData.legalRepSecondName} onChange={handleInputChange}  />
               <Label>Primer Apellido</Label>
-              <Input type="text" name="legalRepFirstSurname" value={formData.legalRepFirstSurname} onChange={handleInputChange} />
+              <Input type="text" name="legalRepFirstSurname" value={formData.legalRepFirstSurname} onChange={handleInputChange} required className={errors.legalRepFirstSurname ? 'border-red-500' : ''}/>
               <Label>Segundo Apellido</Label>
               <Input type="text" name="legalRepSecondSurname" value={formData.legalRepSecondSurname} onChange={handleInputChange} />
             </CardContent>
@@ -189,10 +237,10 @@ const CreditRequestDialog: React.FC<CreditRequestDialogProps> = ({
         </TabsContent>
       </Tabs>
       <DialogFooter>
-        <Button onClick={handleSave}>{formData.id ? "Actualizar" : "Guardar"}</Button>
+        <Button onClick={handleSaveClick}>{formData.id ? "Actualizar" : "Guardar"}</Button>
       </DialogFooter>
     </DialogContent>
   </Dialog>
-);
+)};
 
 export default React.memo(CreditRequestDialog);

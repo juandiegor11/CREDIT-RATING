@@ -11,40 +11,40 @@ import { updateCreditRequest } from "@/services/routes/creditRequest";
 import { useYears } from "../../context/YearsContext";
 
 const initialData = [
-    { category: "Efectivo y Equivalentes de Efectivo", values: [152, 72, 249, 484], editable: true },
+    { category: "Efectivo y Equivalentes de Efectivo", values: [152, 72, "484", ""], editable: true },
     { category: "Inversiones Temporales", values: ["", "", "", ""], editable: true },
-    { category: "Clientes y Ctas Ctes Comerciales", values: [3131, 3552, 4109, 3866], editable: true },
+    { category: "Clientes y Ctas Ctes Comerciales", values: [3131, 3552, "3866","" ], editable: true },
     { category: "Inventarios", values: ["", "", "", ""], editable: true },
-    { category: "Otros Activos Corrientes", values: [2345, 4550, 5045, 6043], editable: true },
-    { category: "Total Activo Corriente", values: ["", "", "", ""], calculated: true },
-    { category: "Propiedad Planta y Equipo", values: [5455, 13833, 17466, 18207], editable: true },
-    { category: "Depreciación Acumulada", values: ["", -5312, -6426, -5312], editable: true },
-    { category: "Propiedad Planta y Equipo Neto", values: ["", "", "", ""], calculated: true },
-    { category: "Inversiones Permanentes", values: [104, 104, 104, 104], editable: true },
+    { category: "Otros Activos Corrientes", values: [2345, 4550, "6043", ""], editable: true },
+    { category: "Total Activo Corriente", values: ["", "", "10393", ""], calculated: true },
+    { category: "Propiedad Planta y Equipo", values: [5455, 13833, "18207", "18207"], editable: true },
+    { category: "Depreciación Acumulada", values: ["", -5312, "-5312", "-5312"], editable: true },
+    { category: "Propiedad Planta y Equipo Neto", values: ["", "", "12895", "12895"], calculated: true },
+    { category: "Inversiones Permanentes", values: [104, 104, "104", "104"], editable: true },
     { category: "Activos Intangibles", values: ["", "", "", ""], editable: true },
     { category: "Otros Activos No Corrientes", values: [292, "", "", ""], editable: true },
     { category: "Inv.Disp.Venta / Valorizaciones", values: ["", "", "", ""], editable: true },
     { category: "Total Activo", values: ["", "", "", ""], calculated: true },
 
-    { category: "Obligaciones Financieras CP", values: [58, 314, 515, 594], editable: true },
+    { category: "Obligaciones Financieras CP", values: [58, 314, "594", ""], editable: true },
     { category: "Porcion Corriente Deuda LP", values: ["", "", "", ""], editable: true },
-    { category: "Proveedores", values: [497, 505, 3577, 5002], editable: true },
-    { category: "Otros Pasivos Corrientes", values: [6997, 8864, 7066, 6421], editable: true },
+    { category: "Proveedores", values: [497, 505, "5002", ""], editable: true },
+    { category: "Otros Pasivos Corrientes", values: [6997, 8864, "6421", ""], editable: true },
     { category: "Total Pasivo Corriente", values: ["", "", "", ""], calculated: true },
-    { category: "Obligaciones Financieras LP", values: [235, 1924, 2886, 2377], editable: true },
-    { category: "Otros Pasivos No Corrientes", values: [454, 444, 444, 1017], editable: true },
+    { category: "Obligaciones Financieras LP", values: [235, 1924, "2377", ""], editable: true },
+    { category: "Otros Pasivos No Corrientes", values: [454, 444, "1017", ""], editable: true },
     { category: "Total Pasivos", values: ["", "", "", ""], calculated: true },
 
-    { category: "Capital Pagado", values: [990, 990, 990, 990], editable: true },
+    { category: "Capital Pagado", values: [990, 990, "990", ""], editable: true },
     { category: "Prima En Colocacion De Acciones", values: ["", "", "", ""], editable: true },
-    { category: "Otros Superávit de Capital", values: ["", 557, 557, ""], editable: true },
-    { category: "Efectos Adopción Primera Vez (NIIF)", values: [187, 187, 187, 782], editable: true },
-    { category: "Reserva Legal", values: [495, 495, 495, 495], editable: true },
+    { category: "Otros Superávit de Capital", values: ["", 557, "", ""], editable: true },
+    { category: "Efectos Adopción Primera Vez (NIIF)", values: [187, 187, "782", ""], editable: true },
+    { category: "Reserva Legal", values: [495, 495, "495", ""], editable: true },
     { category: "Otras Reservas", values: ["", "", "", ""], editable: true },
     { category: "Ajustes Otro Resultado Integral", values: ["", "", "", ""], editable: true },
     { category: "Ajustes Inv.Disp.Venta / Valorizaciones ", values: ["", "", "", ""], editable: true },
-    { category: "Utilidades Retenidas", values: [999, 1773, 2518, 4192], editable: true },
-    { category: "Utilidades del Periodo", values: [567, 746, 1312, 1522], editable: true },
+    { category: "Utilidades Retenidas", values: [999, 1773, "4192", ""], editable: true },
+    { category: "Utilidades del Periodo", values: [567, 746, "1522", ""], editable: true },
     { category: "Total Patrimonio", values: ["", "", "", ""], calculated: true },
     { category: "Total Pasivo + Patrimonio", values: ["", "", "", ""], calculated: true },
 
@@ -57,7 +57,7 @@ export default function EstadoFinanciero() {
     const [loading, setLoading] = useState(false);
     const router = useRouter();
     const { id } = useParams();
-    const { years, selectedYears, toggleYear } = useYears();
+    const { years, selectedYears, resetYears } = useYears();
 
     const formatNumber = (value) => {
         return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
@@ -171,16 +171,19 @@ export default function EstadoFinanciero() {
             const formattedData = data.map((row, rowIndex) => ({
                 category: row.category,
                 Cliente_id: id ? parseNumber(id) : null,
-                idcategory: 1 + '' + rowIndex,
-                values: row.values.map((value, index) => ({
-                    year: new Date().getFullYear() - 4 + index,
-                    value: Number(value)
-                }))
+                idcategory: parseNumber(2 +''+ rowIndex),
+                values: row.values
+                    .map((value, index) => ({
+                        year: years[index],  // Año basado en el contexto
+                        value: Number(value),
+                    }))
+                    .filter(entry => selectedYears[entry.year]) // Filtra solo los años seleccionados
             }));
             const response = await saveDataToDatabase(formattedData);
             if (response.status === 200) {
                 setCalculado(false);
                 setLoading(false);
+                resetYears();
                 router.push('/Creditos');
             } else {
                 alert('Error saving data');
@@ -192,6 +195,7 @@ export default function EstadoFinanciero() {
             setCalculado(false);
         } finally {
             setCalculado(false);
+            resetYears();
             
         }
     };

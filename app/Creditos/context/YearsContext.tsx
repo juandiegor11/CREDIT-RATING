@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { DataEstadoR } from "./DataEstadoR";
+//import { DataEstadoR } from "./dataEstadoR";
 
 // Obtener los últimos 4 años
 const currentYear = new Date().getFullYear();
@@ -28,7 +28,7 @@ export const useYears = () => {
 export const YearsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [selectedYears, setSelectedYears] = useState<Record<number, boolean>>({});
   const [hydrated, setHydrated] = useState(false);
-  const [dataEstadoR, setDataEstadoR] = useState(DataEstadoR)
+  //const [dataEstadoR, setDataEstadoR] = useState(DataEstadoR)
 
   useEffect(() => {
     const storedYears = localStorage.getItem("selectedYears");
