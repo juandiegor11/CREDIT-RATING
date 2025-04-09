@@ -1,0 +1,154 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url = env("DATABASE_URL")
+}
+
+model tipo_Documento {
+  id             Int    @id @default(autoincrement())
+  Tipo_Documento String
+  Prefijo        String
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model user {
+  username    String    @db.VarChar(16)
+  email       String?   @db.VarChar(255)
+  password    String    @db.VarChar(32)
+  create_time DateTime? @default(now()) @db.Timestamp(0)
+
+  @@ignore
+}
+
+model CIIU_Clase {
+  id_clase              Int                     @id
+  descripcion           String                  @db.VarChar(255)
+  clase2                String?                 @db.VarChar(100)
+  clase_servicios       String?                 @db.VarChar(100)
+  CIIU_Sector_Subsector CIIU_Sector_Subsector[]
+}
+
+model CIIU_Sector_Subsector {
+  id_sector     Int         @id @default(autoincrement())
+  id_ciiu_clase Int?
+  sector        String      @db.VarChar(100)
+  subsector     String      @db.VarChar(100)
+  CIIU_Clase    CIIU_Clase? @relation(fields: [id_ciiu_clase], references: [id_clase], onDelete: NoAction, onUpdate: NoAction, map: "CIIU_Sector_Subsector_ibfk_1")
+
+  @@index([id_ciiu_clase], map: "CIIU_Sector_Subsector_ibfk_1")
+}
+
+model CreditRequest {
+  id                         Int     @id @default(autoincrement())
+  fullName                   String  @db.VarChar(255)
+  documentTypePrefix         String  @db.VarChar(50)
+  documentNumber             String  @db.VarChar(50)
+  requestedAmount            Float   @db.Float
+  ciiu                       Int
+  sector                     Int?
+  subsector                  String? @db.VarChar(1000)
+  department                 Int?
+  city                       Int?
+  companyClassificationModel String  @db.VarChar(100)
+  companyClassification      String  @db.VarChar(100)
+  agency                     String  @db.VarChar(100)
+  lastIncome                 Float   @db.Float
+  companySize                String? @db.VarChar(100)
+  legalRepDocumentTypePrefix String? @db.VarChar(50)
+  legalRepDocumentNumber     String? @db.VarChar(50)
+  legalRepFirstName          String? @db.VarChar(100)
+  legalRepSecondName         String? @db.VarChar(100)
+  legalRepFirstSurname       String? @db.VarChar(100)
+  legalRepSecondSurname      String? @db.VarChar(100)
+  Balance                    Int?
+  date                       String?
+  fecha_constitucion         String?
+  Tiene_Sindicato            String?
+  Registra_Procesos_Legales  String?
+  Calif_Central_Riesgo       String?
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model CiudadDepartamento_flat {
+  Departamento       String? @db.Text
+  Municipio          String? @db.Text
+  CodigoDepartamento Int?
+  CodigoMunicipio    Int     @id
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model DatosAdministrador {
+  Id        Int     @id
+  Variables String? @db.Text
+  Anio      String? @db.Text
+  Valor     String? @db.Text
+}
+
+model Balances {
+  id           Int      @id @default(autoincrement())
+  Cliente_id   Int?
+  Categoria    String?  @db.VarChar(1000)
+  Anio         Int?
+  Valor        Decimal? @db.Decimal(15, 2)
+  Categoria_id Int?
+}
+
+model Categorias_Balances {
+  id     Int     @id
+  nombre String? @db.VarChar(1000)
+}
+
+model Scoring_CriteriosCalificacion {
+  id                Int      @id @default(autoincrement())
+  riesgo            String   @db.VarChar(50)
+  calificacion      String   @db.VarChar(20)
+  escala_evaluacion Decimal  @db.Decimal(5, 2)
+  desviacion        Decimal? @db.Decimal(5, 2)
+}
+
+model Scoring_PorcentajePatrimonio {
+  id           Int     @id @default(autoincrement())
+  calificacion String  @db.VarChar(20)
+  porcentaje   Decimal @db.Decimal(5, 2)
+}
+
+model Scoring_PorcentajeVentasMensuales {
+  id           Int     @id @default(autoincrement())
+  calificacion String  @db.VarChar(20)
+  porcentaje   Decimal @db.Decimal(5, 2)
+}
+
+model Indicadores {
+  id          Int      @id @default(autoincrement())
+  ClienteId   Int?
+  Categoria   String?  @db.VarChar(1000)
+  Anio        Int?
+  Valor       Decimal? @db.Decimal(15, 3)
+  CategoriaId Int?
+}
+
+model Resultados_Creditos {
+  id          Int      @id @default(autoincrement())
+  Fecha       DateTime? @db.DateTime(0)
+  calificacion   String?  @db.VarChar(1000)
+  cupo        Int?
+  Cliente_Id       Int?
+  Insolvencia String? @db.VarChar(1000)
+  Nit        String?  @db.VarChar(1000)
+  Nombre     String?  @db.VarChar(1000)
+}
+
+model LEY_DE_INSOLVENCIA {
+  Id          Int     @id @default(autoincrement())
+  NIT       Int?
+  NOMBRE     String? @db.VarChar(1000)
+  REGIONAL String? @db.VarChar(1000)
+  DEPARTAMENTO String? @db.VarChar(1000)
+  CIUDAD String? @db.VarChar(1000)
+  CIIU  String? @db.VarChar(1000)
+  MACROSECTOR String? @db.VarChar(1000)
+  PROCESO String? @db.VarChar(1000)
+}
