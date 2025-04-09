@@ -31,3 +31,9 @@ export const deleteRequest = async (id) => {
     where: { id: Number(id) },
   });
 };
+
+export const getRequestByNit= async (Nit) => {
+  return await prisma.creditRequest.findMany({
+    where: { documentNumber : Nit },
+  });
+}

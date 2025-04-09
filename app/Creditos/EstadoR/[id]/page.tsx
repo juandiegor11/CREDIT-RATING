@@ -8,17 +8,17 @@ import { createBalance } from '@/services/routes/balances';
 import { useParams } from "next/navigation";
 import { Progress } from "@/components/ui/progress";
 import { useRouter } from "next/navigation";
-import { useYears } from "../../context/YearsContext";
+import { useYears} from "../../context/YearsContext";
 
 //const years = [new Date().getFullYear() - 4, new Date().getFullYear() - 3, new Date().getFullYear() - 2, new Date().getFullYear() - 1];
 
 const dataEstadoResultados = [
-    { category: "Ingresos de Actividades Ordinarias", values: ["", "", "15539", "17774"], editable: true },
-    { category: "Costo de Ventas", values: ["", "", "11502", "13616"], editable: true },
+    { category: "Ingresos de Actividades Ordinarias", values: ["", "", "", ""], editable: true },
+    { category: "Costo de Ventas", values: ["", "", "", ""], editable: true },
     { category: "% Costo de Ventas / Ventas", values: ["", "", "", ""], calculated: true },
-    { category: "Gastos de Ventas", values: ["", "", "111", "4"], editable: true },
+    { category: "Gastos de Ventas", values: ["", "", "", ""], editable: true },
     { category: "% Gastos de Ventas / Ventas", values: ["", "", "", ""], calculated: true },
-    { category: "Gastos de Administración", values: ["", "", "2117", ""], editable: true },
+    { category: "Gastos de Administración", values: ["", "", "", ""], editable: true },
     { category: "% Gastos de Admon / Ventas", values: ["", "", "", ""], calculated: true },
     { category: "Utilidad Op. Antes de Deprec.", values: ["", "", "", ""], calculated: true },
     { category: "% Ut. Op. Antes de Dep. / Ventas", values: ["", "", "", ""], calculated: true },
@@ -26,10 +26,10 @@ const dataEstadoResultados = [
     { category: "AMORTIZACIÓN", values: ["", "", "", ""], editable: true },
     { category: "Utilidad Operacional", values: ["", "", "", ""], calculated: true },
     { category: "% Utilidad Operacional / Ventas", values: ["", "", "", ""], calculated: true },
-    { category: "Ingresos Financieros", values: ["", "", "215", ""], editable: true },
-    { category: "Gastos Financieros", values: ["", "", "371", ""], editable: true },
+    { category: "Ingresos Financieros", values: ["", "", "", ""], editable: true },
+    { category: "Gastos Financieros", values: ["", "", "", ""], editable: true },
     { category: "% Gastos Financieros / Ventas", values: ["", "", "", ""], calculated: true },
-    { category: "OTROS INGRESOS Y EGRESOS", values: ["", "-131", "", ""], editable: true },
+    { category: "OTROS INGRESOS Y EGRESOS", values: ["", "", "", ""], editable: true },
     { category: "CORRECCIÓN MONETARIA", values: ["", "", "", ""], editable: true },
     { category: "Utilidad Antes de Impuestos", values: ["", "", "", ""], calculated: true },
     { category: "Impuestos", values: ["", "", "", ""], editable: true },
@@ -40,12 +40,15 @@ const dataEstadoResultados = [
 ];
 
 export default function Creditos() {
-    const { id } = useParams();
+    const params = useParams();
+    const id = params?.id as string; // Asegúrate de que `id` sea un string
     const router = useRouter();
     const [data, setData] = useState(dataEstadoResultados);
     const [calculado, setCalculado] = useState(false);
     const [loading, setLoading] = useState(false);
-    const { years, selectedYears, toggleYear } = useYears();
+    const { years, selectedYears, toggleYear, dataEstadoR,añadirDataEstadoR } = useYears();
+    const [partialMonth, setPartialMonth] = useState<null | number>(null); // Permitir null o number
+    const [isPartial, setIsPartial] = useState(false); // Estado para el checkbox de parcial
 
     const handleCheckboxChange = (year) => {
         toggleYear(year); // Almacenar la selección en el contexto
@@ -76,7 +79,7 @@ export default function Creditos() {
         let utilidadNeta = utilidadAntesImpuestos.map((utilidad, i) => utilidad - impuestos[i]);
         let otrosResultadosIntegrales = updatedData.find(row => row.category === "OTROS RESULTADOS INTEGRALES (NETO)")?.values.map(val => Number(val) || 0) || [0, 0, 0, 0];
         let totalResultadoIntegral = utilidadNeta.map((utilidad, i) => utilidad + otrosResultadosIntegrales[i]);
-
+        
         return updatedData.map(row => {
             if (row.category === "Utilidad Op. Antes de Deprec.") {
                 return {
@@ -149,8 +152,11 @@ export default function Creditos() {
     };
 
     const handleCalculate = () => {
+        
         setData(calculateData(data));
         setCalculado(true);
+        localStorage.setItem("month", JSON.stringify(partialMonth));
+        localStorage.setItem("isPartial", JSON.stringify(isPartial));
     };
 
     const saveDataToDatabase = async (data) => {
@@ -165,8 +171,28 @@ export default function Creditos() {
         }));
     };
 
+    const handlePartialCheckboxChange = () => {
+        setIsPartial(!isPartial);
+        if (!isPartial) {
+            setPartialMonth(null); // Resetear el mes si se desmarca
+        }
+    };
+
+    const handlePartialMonthChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+        setPartialMonth(Number(event.target.value)); // Ahora TypeScript no dará error
+    };
+
     const handleSave = async () => {
+        if (!id) {
+            console.error("ID is missing");
+            return;
+        }
         setLoading(true);
+        data.push({
+            category: "periodo ultimo año",
+            values: ["", "", "", localStorage.getItem("isPartial") === "true" ? (localStorage.getItem("month") ?? "12") : "12"],
+            editable: true,
+        })
         try {
             const formattedData = data.map((row, rowIndex) => ({
                 category: row.category,
@@ -175,20 +201,25 @@ export default function Creditos() {
                 values: row.values
                     .map((value, index) => ({
                         year: years[index],  // Año basado en el contexto
-                        value: Number(value),
+                        value: row.category === "periodo ultimo año" && index === years.length - 1
+                            ? (localStorage.getItem("isPartial") === "true" 
+                                ? Number(localStorage.getItem("month")) 
+                                : 12)
+                            : parseFloat(value) || 0 // Por defecto 12 para todos los años
                     }))
                     .filter(entry => selectedYears[entry.year]) // Filtra solo los años seleccionados
             }));
             debugger;
-            const response = await saveDataToDatabase(formattedData);
-            if (response.status === 200) {
-                setLoading(false);
-                router.push(`/Creditos/Estadof/${id}`);
-            } else {
-                alert('Error server - saving data');
-            }
+            router.push(`/Creditos/Estadof/${id}`);
+            // const response = await saveDataToDatabase(formattedData);
+            // if (response.status === 200) {
+            //     setLoading(false);
+            //     router.push(`/Creditos/Estadof/${id}`);
+            // } else {
+            //     alert('Error server - saving data');
+            // }
             //alert('Data saved successfully');
-            debugger;
+            añadirDataEstadoR(formattedData);
             setLoading(false);
             setCalculado(false);
         } catch (error) {
@@ -203,6 +234,7 @@ export default function Creditos() {
 
     return (
         <div className="overflow-x-auto p-4">
+            <h1>Estado de Resultados para ID: {id}</h1>
             {loading && (
                 <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50">
                     <div className="bg-white p-4 rounded shadow-lg">
@@ -223,6 +255,35 @@ export default function Creditos() {
                         <th className="text-left p-1"></th>
                         <th className="text-left p-3">MILLONES DE PESOS</th>
                     </tr>
+                    <tr className="bg-green-300 text-black-100">
+                        <th className="text-left p-3 text--600 ">CIFRAS EN</th>
+                        <th className="text-left p-1 "></th>
+                        <th className="text-left p-1"></th>
+                        <th className="text-left p-1"></th>
+                        <th className="text-left p-3">
+                        {selectedYears[years[years.length - 1]] && (
+                            <>
+                                parcial  <input 
+                                    type="checkbox" 
+                                    onChange={handlePartialCheckboxChange}
+                                    checked={isPartial}
+                                /> 
+                                {isPartial && (
+                                    <select 
+                                        value={partialMonth || ""} 
+                                        onChange={handlePartialMonthChange} 
+                                        className="ml-2 p-1 border rounded"
+                                    >
+                                        <option value="" disabled>Mes</option>
+                                        {Array.from({ length: 12 }, (_, i) => i + 1).map(month => (
+                                            <option key={month} value={month}>{month}</option>
+                                        ))}
+                                    </select>
+                                )}
+                                </>
+                            )}
+                            </th>
+                    </tr>
                     <tr className="bg-green-300 text-black">
                         <th className="text-left p-2">Estado de Resultados</th>
                         {years.map((year, index) => (
@@ -235,6 +296,7 @@ export default function Creditos() {
                             </th>
                         ))}
                     </tr>
+  
                 </thead>
                 <tbody>
                     {data.map((row, rowIndex) => (

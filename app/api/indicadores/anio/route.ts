@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createRequest, getRequests, getRequestById, getDatosbyAnio } from '../../../../services/requests/indicadores';
+import { createRequest, getRequests, getRequestById, getDatosbyAnio } from '../../../../services/requests/balances';
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);

@@ -57,6 +57,7 @@ const CreditRequestDialog: React.FC<CreditRequestDialogProps> = ({
 }) => {
   const [errors, setErrors] = useState<{ [key: string]: boolean }>({});
   const validateFields = () => {
+    
     const newErrors: { [key: string]: boolean } = {};
     const requiredFields = [
       'documentTypePrefix', 
@@ -70,9 +71,8 @@ const CreditRequestDialog: React.FC<CreditRequestDialogProps> = ({
       'companySize',
       'legalRepDocumentNumber',
       'legalRepFirstName',
-      'legalRepSecondName',
       'legalRepFirstSurname',
-      'legalRepSecondSurname'
+  
     ];
 
     requiredFields.forEach(field => {
@@ -86,6 +86,7 @@ const CreditRequestDialog: React.FC<CreditRequestDialogProps> = ({
   };
 
   const handleSaveClick = () => {
+    
     if (validateFields()) {
       handleSave();
     } else {
@@ -107,11 +108,19 @@ const CreditRequestDialog: React.FC<CreditRequestDialogProps> = ({
         <TabsContent value="cliente">
           <Card>
             <CardContent className="space-y-4 p-4">
-              <Label>Fecha</Label>
+              <Label>Fecha Solicitud</Label>
               <Input 
                 type="date" 
                 name="date" 
                 value={formData.date || new Date().toISOString().split('T')[0]} 
+                onChange={handleInputChange} 
+                className={errors.date ? 'border-red-500' : ''}
+              />
+              <Label>Fecha de constitución (DD/MM/AAAA)</Label>
+              <Input 
+                type="date" 
+                name="fecha_constitucion" 
+                value={formData.fecha_constitucion || "" } 
                 onChange={handleInputChange} 
                 className={errors.date ? 'border-red-500' : ''}
               />
@@ -195,6 +204,48 @@ const CreditRequestDialog: React.FC<CreditRequestDialogProps> = ({
               />
               <Label>Tamaño Empresa</Label>
               <Input type="text" name="companySize" value={formData.companySize} onChange={handleInputChange} required className={errors.companySize ? 'border-red-500' : ''} />
+
+              <Label>Tiene sindicato?</Label>
+              <Select name="Tiene_Sindicato" value={formData.Tiene_Sindicato} onValueChange={(value) => {
+                handleSelectChange('Tiene_Sindicato', value);
+              }} required>
+                <SelectTrigger>
+                  <SelectValue>{formData.Tiene_Sindicato ? formData.Tiene_Sindicato : "Seleccione una opcion"}</SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {["Si","No"].map(value => (
+                    <SelectItem key={value} value={value}>{value}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Label>Registra demandas o procesos legales?</Label>
+              <Select name="Registra_Procesos_Legales" value={formData.Registra_Procesos_Legales} onValueChange={(value) => {
+                handleSelectChange('Registra_Procesos_Legales', value);
+              }} required>
+                <SelectTrigger>
+                  <SelectValue>{formData.Registra_Procesos_Legales ? formData.Registra_Procesos_Legales : "Seleccione una opcion"}</SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {["Si","No"].map(value => (
+                    <SelectItem key={value} value={value}>{value}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Label > Calificacion central de riesgo</Label>
+              <Select name="Calif_Central_Riesgo" value={formData.Calif_Central_Riesgo} onValueChange={(value) => {
+                handleSelectChange('Calif_Central_Riesgo', value);
+              }} required>
+                <SelectTrigger>
+                  <SelectValue>{formData.Calif_Central_Riesgo ? formData.Calif_Central_Riesgo : "Seleccione una opcion"}</SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {["A","B","C","D","E"].map(value => (
+                    <SelectItem key={value} value={value}>{value}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
             </CardContent>
           </Card>
         </TabsContent>
@@ -244,3 +295,5 @@ const CreditRequestDialog: React.FC<CreditRequestDialogProps> = ({
 )};
 
 export default React.memo(CreditRequestDialog);
+
+//FECHA,NIT, NOMBRE, CALIFI OBT,CUPO,SI ESTAEN LISTA(SI ESTA DESCRIPCION, NO ESTA nada), 

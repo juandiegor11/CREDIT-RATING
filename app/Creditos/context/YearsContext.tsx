@@ -10,6 +10,10 @@ interface YearsContextType {
   selectedYears: Record<number, boolean>;
   toggleYear: (year: number) => void;
   resetYears: () => void; // Nueva función para reiniciar la selección
+  dataEstadoR: any[];
+  setDataEstadoR: React.Dispatch<React.SetStateAction<any[]>>;
+  clearDataEstadoR: () => void;
+  añadirDataEstadoR: (data: any) => void;
 }
 
 // Crear contexto
@@ -28,10 +32,15 @@ export const useYears = () => {
 export const YearsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [selectedYears, setSelectedYears] = useState<Record<number, boolean>>({});
   const [hydrated, setHydrated] = useState(false);
-  //const [dataEstadoR, setDataEstadoR] = useState(DataEstadoR)
+  const [dataEstadoR, setDataEstadoR] = useState([]);
+  const clearDataEstadoR = () => setDataEstadoR([]);
 
   useEffect(() => {
     const storedYears = localStorage.getItem("selectedYears");
+    const storedDataEstadoR = localStorage.getItem("dataEstadoR");
+    if (storedDataEstadoR) {
+      setDataEstadoR(JSON.parse(storedDataEstadoR));
+    }
     if (storedYears) {
       setSelectedYears(JSON.parse(storedYears));
     }
@@ -41,6 +50,7 @@ export const YearsProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => {
     if (hydrated) {
       localStorage.setItem("selectedYears", JSON.stringify(selectedYears));
+      localStorage.setItem("dataEstadoR", JSON.stringify(dataEstadoR));
     }
   }, [selectedYears, hydrated]);
 
@@ -51,6 +61,10 @@ export const YearsProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }));
   };
 
+  const añadirDataEstadoR = (data: any) => {
+    setDataEstadoR( dataEstadoR.concat(data))
+  }
+
   // Nueva función para resetear la selección
   const resetYears = () => {
     setSelectedYears({});
@@ -58,7 +72,7 @@ export const YearsProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   return (
-    <YearsContext.Provider value={{ years: lastFourYears, selectedYears, toggleYear, resetYears }}>
+    <YearsContext.Provider value={{ years: lastFourYears, selectedYears, toggleYear, resetYears,dataEstadoR, setDataEstadoR, clearDataEstadoR, añadirDataEstadoR }}>
       {children}
     </YearsContext.Provider>
   );

@@ -1,5 +1,5 @@
 import React from 'react'
-import Sidebar from '@/components/shared/Sidebar/Sidebar'
+import {Sidebar} from '../../../components/ui/sidebar'
 
 export default function layoutRoutes({ children }: Readonly<{ children: React.ReactNode }>) {
     return (

@@ -13,9 +13,18 @@ import { deleteBalanceByClient } from "@/services/routes/balances";
 import { getDepartments, getMunicipalitiesByDepartment, getCiuDepartamentoById } from '@/services/routes/ciuDepartamento';
 import { createCreditRequest, updateCreditRequest, deleteCreditRequest, getCreditRequests } from '@/services/routes/creditRequest';
 import { useRouter } from 'next/navigation';
+import { deleteCupo } from "@/services/routes/llamaprod_calcular_cupo";
 const CreditRequests = () => {
   const router = useRouter();
-  const [requests, setRequests] = useState([]);
+  const [requests, setRequests] = useState<{
+    fullName: string;
+    documentTypePrefix: string;
+    documentNumber: string;
+    lastIncome: number;
+    id: number;
+    Balance: number;
+    department: number;
+  }[]>([]);
   const [tab, setTab] = useState("cliente");
   const [open, setOpen] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null);
@@ -23,18 +32,18 @@ const CreditRequests = () => {
   const [subsector, setSubsector] = useState("Servicios");
   const [clasifModelo, setClasifModelo] = useState("");
   const [clasifEmpresa, setClasifEmpresa] = useState("");
-  const [departments, setDepartments] = useState([]);
-  const [cities, setCities] = useState([]);
+  const [departments, setDepartments] = useState<{ CodigoDepartamento: number; Departamento: string }[]>([]);
+  const [cities, setCities] = useState<{ CodigoMunicipio: number; Municipio: string }[]>([]);
   const [formData, setFormData] = useState({
     fullName: "",
     documentTypePrefix: "",
     documentNumber: "",
     requestedAmount: 0,
     ciiu: 0,
-    sector: null,
+    sector: null as null | number,
     subsector: null,
-    department: null,
-    city: null,
+    department: null as null | number,
+    city: null as null | number,
     companyClassificationModel: "",
     companyClassification: "",
     agency: "",
@@ -52,10 +61,10 @@ const CreditRequests = () => {
     router.push(`/Creditos/EstadoR/${id}`);
   };
 
-  const [documentTypes, setDocumentTypes] = useState([]);
-  const [ciiuOptions, setCiiuOptions] = useState([]);
+  const [documentTypes, setDocumentTypes] = useState<{ Prefijo: string; Tipo_Documento: string }[]>([]);
+  const [ciiuOptions, setCiiuOptions] = useState<{ id_clase: number; clase2?: string; clase_servicios?: string; descripcion: string }[]>([]);
   const [ciiuSearchTerm, setCiiuSearchTerm] = useState("");
-  const [filteredCiiuOptions, setFilteredCiiuOptions] = useState([]);
+  const [filteredCiiuOptions, setFilteredCiiuOptions] = useState<{ id_clase: number; clase2?: string; clase_servicios?: string; descripcion: string }[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -86,8 +95,9 @@ const CreditRequests = () => {
           setSector(sectorData[0].sector);
           setSubsector(sectorData[0].subsector);
 
-          setClasifModelo(ciiuOptions.find(option => option.id_clase === formData.ciiu).clase2);
-          setClasifEmpresa(ciiuOptions.find(option => option.id_clase === formData.ciiu).clase_servicios);
+          const ciiuOption = ciiuOptions.find(option => option.id_clase === formData.ciiu);
+          setClasifModelo(ciiuOption?.clase2 || ""); // Usa un valor predeterminado si es undefined
+          setClasifEmpresa(ciiuOption?.clase_servicios || ""); // Usa un valor predeterminado si es undefined
         } else {
           setFormData(prevFormData => ({
             ...prevFormData,
@@ -111,7 +121,7 @@ const CreditRequests = () => {
     };
 
     fetchSector();
-  }, [formData.ciiu]);
+  }, [formData.ciiu, ciiuOptions]);
 
   useEffect(() => {
     const fetchCity = async () => {
@@ -163,18 +173,20 @@ const CreditRequests = () => {
     const selectedDepartment = departments.find(department => department.Departamento === value);
     setFormData(prevFormData => ({
       ...prevFormData,
-      department: selectedDepartment.CodigoDepartamento,
-      city: 0 // Reset city when department changes
+      department: selectedDepartment ? selectedDepartment.CodigoDepartamento : null,
+      city: selectedDepartment ? 0 : null // Reset city only if department changes
     }));
-    const citiesData = await getMunicipalitiesByDepartment(selectedDepartment.CodigoDepartamento);
-    setCities(citiesData);
+    if (selectedDepartment) {
+      const citiesData = await getMunicipalitiesByDepartment(selectedDepartment.CodigoDepartamento);
+      setCities(citiesData);
+    }
   }, [departments]);
 
   const handleCityChange = useCallback((value) => {
     const selectedCity = cities.find(city => city.Municipio === value);
     setFormData(prevFormData => ({
       ...prevFormData,
-      city: selectedCity.CodigoMunicipio
+      city: selectedCity?.CodigoMunicipio ?? null
     }));
   }, [cities]);
 
@@ -183,7 +195,12 @@ const CreditRequests = () => {
       await updateCreditRequest(requests[editingIndex].id, JSON.stringify(formData));
       setRequests(prevRequests => {
         const updatedRequests = [...prevRequests];
-        updatedRequests[editingIndex] = formData;
+        updatedRequests[editingIndex] = { 
+          ...formData, 
+          id: requests[editingIndex].id, 
+          Balance: requests[editingIndex].Balance, 
+          department: formData.department ?? 0 // Ensure department is a number
+        };
         return updatedRequests;
       });
     } else {
@@ -197,7 +214,10 @@ const CreditRequests = () => {
 
   const handleEdit = useCallback(async (index) => {
     setEditingIndex(index);
-    setFormData(requests[index]);
+    setFormData({
+      ...formData,
+      ...requests[index]
+    });
     const citiesData = await getMunicipalitiesByDepartment(requests[index].department);
     setCities(citiesData);
     setOpen(true);
@@ -209,9 +229,10 @@ const CreditRequests = () => {
   }, [documentTypes]);
 
   const handleDelete = useCallback(async (index) => {
+    debugger;
     if (requests.length > 0 && requests[index]) {
       await deleteCreditRequest(requests[index].id);
-      await deleteBalanceByClient(requests[index].id);
+      await deleteCupo(requests[index].id);
       setRequests(prevRequests => prevRequests.filter((_, i) => i !== index));
     } else {
       console.error("Invalid index or empty requests array");
@@ -250,7 +271,7 @@ const CreditRequests = () => {
         <CardContent>
           <div className="flex justify-between items-center mb-5">
             <h2 className="text-xl font-bold">Solicitudes de Crédito</h2>
-            <Button className="mt-3" onClick={
+            <Button className="mt-5" onClick={
               () => {
                 resetForm();
                 setEditingIndex(null); // Restablecer el estado editingIndex

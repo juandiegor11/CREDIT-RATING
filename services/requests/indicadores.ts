@@ -2,9 +2,9 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-interface BalanceRecord {
-  Cliente_id: number;
-  Categoria_id: number | null;
+interface IndicadorRecord {
+  ClienteId: number;
+  CategoriaId: number | null;
   Categoria: string;
   Anio: number;
   Valor: number;
@@ -12,13 +12,13 @@ interface BalanceRecord {
 
 export const createRequest = async (data: any[]) => {
   try {
-    const records: BalanceRecord[] = []; // Define el tipo explícito del arreglo
+    const records: IndicadorRecord[] = []; // Define el tipo explícito del arreglo
 
     for (const row of data) {
       for (const value of row.values) {
         records.push({
-          Cliente_id: Number(row.Cliente_id), // Asegúrate de que Cliente_id sea un número
-          Categoria_id: row.idcategory ? Number(row.idcategory) : null,
+          ClienteId: Number(row.Cliente_id), // Asegúrate de que Cliente_id sea un número
+          CategoriaId: row.idcategory ? Number(row.idcategory) : null,
           Categoria: row.category,
           Anio: Number(value.year), // Asegúrate de que Anio sea un número
           Valor: Number(value.value), // Asegúrate de que Valor sea un número
@@ -26,7 +26,7 @@ export const createRequest = async (data: any[]) => {
       }
     }
 
-    const res = await prisma.balances.createMany({
+    const res = await prisma.indicadores.createMany({
       data: records,
     });
 
@@ -37,6 +37,7 @@ export const createRequest = async (data: any[]) => {
     };
 
   } catch (error) {
+    console.log(error);
     return {
       status: 500,
       message: 'Error',
@@ -46,7 +47,7 @@ export const createRequest = async (data: any[]) => {
 };
 
 export const getRequests = async () => {
-  return await prisma.balances.findMany({
+  return await prisma.indicadores.findMany({
     orderBy: {
       Anio: 'asc',
     },
@@ -54,26 +55,26 @@ export const getRequests = async () => {
 };
 
 export const getRequestById = async (id) => {
-  return await prisma.balances.findUnique({
+  return await prisma.indicadores.findUnique({
     where: { id: Number(id) },
   });
 };
 
 export const updateRequest = async (id, data) => {
-  return await prisma.balances.update({
+  return await prisma.indicadores.update({
     where: { id: Number(id) },
     data,
   });
 };
 
 export const deleteRequest = async (id) => {
-  return await prisma.balances.delete({
+  return await prisma.indicadores.delete({
     where: { id: Number(id) },
   });
 };
 
 export const getDatosby = async () => {
-  return await prisma.balances.findMany({
+  return await prisma.indicadores.findMany({
     select: {
       Valor: true,
       Anio: true,
@@ -82,7 +83,7 @@ export const getDatosby = async () => {
 };
 
 export const getDatosbyAnio = async (codAnio) => {
-  return await prisma.balances.findMany({
+  return await prisma.indicadores.findMany({
     where: { Anio: codAnio },
     orderBy: {
       id: 'asc',
@@ -91,16 +92,16 @@ export const getDatosbyAnio = async (codAnio) => {
 };
 
 export const deleteBalanceByClient= async (id) => {
-  return await prisma.balances.deleteMany({
-    where: { Cliente_id : Number(id) },
+  return await prisma.indicadores.deleteMany({
+    where: { ClienteId : Number(id) },
   });
 };
 
 export const getBalancesByClient = async (id) => {
-  return await prisma.balances.findMany({
-    where: { Cliente_id : Number(id) },
+  return await prisma.indicadores.findMany({
+    where: { ClienteId : Number(id) },
     orderBy: {
-      Categoria_id: 'asc',
+      CategoriaId: 'asc',
     },
   });
-}
+};

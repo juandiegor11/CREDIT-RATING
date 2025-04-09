@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url      = "mysql://root:iGqrrVrpZcyEOpOmpwsaVsoIHtzvslcH@yamanote.proxy.rlwy.net:18705/railway"
+  url = env("DATABASE_URL")
 }
 
 model tipo_Documento {
@@ -64,6 +64,11 @@ model CreditRequest {
   legalRepFirstSurname       String? @db.VarChar(100)
   legalRepSecondSurname      String? @db.VarChar(100)
   Balance                    Int?
+  date                       String?
+  fecha_constitucion         String?
+  Tiene_Sindicato            String?
+  Registra_Procesos_Legales  String?
+  Calif_Central_Riesgo       String?
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
@@ -83,19 +88,67 @@ model DatosAdministrador {
 }
 
 model Balances {
-  id                  Int                  @id @default(autoincrement())
-  Cliente_id          Int?
-  Categoria           String?              @db.VarChar(1000)
-  Anio                Int?
-  Valor               Decimal?             @db.Decimal(15, 2)
-  Categoria_id        Int?
-  Categorias_Balances Categorias_Balances? @relation(fields: [Categoria_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Categoria_id")
-
-  @@index([Categoria_id], map: "Categoria_id_idx")
+  id           Int      @id @default(autoincrement())
+  Cliente_id   Int?
+  Categoria    String?  @db.VarChar(1000)
+  Anio         Int?
+  Valor        Decimal? @db.Decimal(15, 2)
+  Categoria_id Int?
 }
 
 model Categorias_Balances {
-  id       Int        @id
-  nombre   String?    @db.VarChar(1000)
-  Balances Balances[]
+  id     Int     @id
+  nombre String? @db.VarChar(1000)
+}
+
+model Scoring_CriteriosCalificacion {
+  id                Int      @id @default(autoincrement())
+  riesgo            String   @db.VarChar(50)
+  calificacion      String   @db.VarChar(20)
+  escala_evaluacion Decimal  @db.Decimal(5, 2)
+  desviacion        Decimal? @db.Decimal(5, 2)
+}
+
+model Scoring_PorcentajePatrimonio {
+  id           Int     @id @default(autoincrement())
+  calificacion String  @db.VarChar(20)
+  porcentaje   Decimal @db.Decimal(5, 2)
+}
+
+model Scoring_PorcentajeVentasMensuales {
+  id           Int     @id @default(autoincrement())
+  calificacion String  @db.VarChar(20)
+  porcentaje   Decimal @db.Decimal(5, 2)
+}
+
+model Indicadores {
+  id          Int      @id @default(autoincrement())
+  ClienteId   Int?
+  Categoria   String?  @db.VarChar(1000)
+  Anio        Int?
+  Valor       Decimal? @db.Decimal(15, 3)
+  CategoriaId Int?
+}
+
+model Resultados_Creditos {
+  id          Int      @id @default(autoincrement())
+  Fecha       DateTime? @db.DateTime(0)
+  calificacion   String?  @db.VarChar(1000)
+  cupo        Int?
+  Cliente_Id       Int?
+  Insolvencia String? @db.VarChar(1000)
+  Nit        String?  @db.VarChar(1000)
+  Nombre     String?  @db.VarChar(1000)
+}
+
+model LEY_DE_INSOLVENCIA {
+  Id          Int     @id @default(autoincrement())
+  NIT       Int?
+  NOMBRE     String? @db.VarChar(1000)
+  REGIONAL String? @db.VarChar(1000)
+  DEPARTAMENTO String? @db.VarChar(1000)
+  CIUDAD String? @db.VarChar(1000)
+  CIIU  String? @db.VarChar(1000)
+  MACROSECTOR String? @db.VarChar(1000)
+  PROCESO String? @db.VarChar(1000)
 }

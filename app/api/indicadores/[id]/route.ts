@@ -1,25 +1,19 @@
 import { NextResponse } from 'next/server';
-import { updateRequest, deleteRequest, getRequestById, getRequestByClase } from '../../../../services/requests/ciiuSectorRequest';
+import { updateRequest, deleteRequest, getRequestById } from '../../../../services/requests/indicadores';
 
 export async function GET(req: Request, { params }) {
   const { id } = params;
+
   try {
     const request = await getRequestById(id);
+    if (!request) {
+      return NextResponse.json({ error: 'Request not found' }, { status: 404 });
+    }
     return NextResponse.json(request, { status: 200 });
   } catch (error) {
     return NextResponse.json({ error: 'Error retrieving request' }, { status: 500 });
   }
 }
-// export async function getByClase(req: Request, { params }) {
-
-//   const { id_clase } = params;
-//   try {
-//     const requests = await getRequestByClase(id_clase);
-//     return NextResponse.json(requests, { status: 200 });
-//   } catch (error) {
-//     return NextResponse.json({ error: 'Error retrieving requests by clase' }, { status: 500 });
-//   }
-// }
 
 export async function PUT(req: Request, { params }) {
   const { id } = params;

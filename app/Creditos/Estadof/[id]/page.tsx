@@ -7,44 +7,48 @@ import { Button } from "@/components/ui/button";
 import { useParams, useRouter } from "next/navigation";
 import { Progress } from "@/components/ui/progress";
 import { createBalance } from "@/services/routes/balances";
+import { createIndicadores } from "@/services/routes/indicadores";
 import { updateCreditRequest } from "@/services/routes/creditRequest";
 import { useYears } from "../../context/YearsContext";
+import { createDataIndicadores } from "../../services/createDataIndicadores";
+import { toast,Toaster } from "sonner"
+import { getProdCupo } from "@/services/routes/llamaprod_calcular_cupo";
 
 const initialData = [
-    { category: "Efectivo y Equivalentes de Efectivo", values: [152, 72, "484", ""], editable: true },
+    { category: "Efectivo y Equivalentes de Efectivo", values: ["", "", "", ""], editable: true },
     { category: "Inversiones Temporales", values: ["", "", "", ""], editable: true },
-    { category: "Clientes y Ctas Ctes Comerciales", values: [3131, 3552, "3866","" ], editable: true },
+    { category: "Clientes y Ctas Ctes Comerciales", values: ["", "", "", ""], editable: true },
     { category: "Inventarios", values: ["", "", "", ""], editable: true },
-    { category: "Otros Activos Corrientes", values: [2345, 4550, "6043", ""], editable: true },
-    { category: "Total Activo Corriente", values: ["", "", "10393", ""], calculated: true },
-    { category: "Propiedad Planta y Equipo", values: [5455, 13833, "18207", "18207"], editable: true },
-    { category: "Depreciación Acumulada", values: ["", -5312, "-5312", "-5312"], editable: true },
-    { category: "Propiedad Planta y Equipo Neto", values: ["", "", "12895", "12895"], calculated: true },
-    { category: "Inversiones Permanentes", values: [104, 104, "104", "104"], editable: true },
+    { category: "Otros Activos Corrientes", values: ["", "", "", ""], editable: true },
+    { category: "Total Activo Corriente", values: ["", "", "", ""], calculated: true },
+    { category: "Propiedad Planta y Equipo", values: ["", "", "", ""], editable: true },
+    { category: "Depreciación Acumulada", values: ["-", "-", "-", "-"], editable: true },
+    { category: "Propiedad Planta y Equipo Neto", values: ["", "", "", ""], calculated: true },
+    { category: "Inversiones Permanentes", values: ["", "", "", ""], editable: true },
     { category: "Activos Intangibles", values: ["", "", "", ""], editable: true },
-    { category: "Otros Activos No Corrientes", values: [292, "", "", ""], editable: true },
+    { category: "Otros Activos No Corrientes", values: ["", "", "", ""], editable: true },
     { category: "Inv.Disp.Venta / Valorizaciones", values: ["", "", "", ""], editable: true },
     { category: "Total Activo", values: ["", "", "", ""], calculated: true },
 
-    { category: "Obligaciones Financieras CP", values: [58, 314, "594", ""], editable: true },
+    { category: "Obligaciones Financieras CP", values: ["", "", "", ""], editable: true },
     { category: "Porcion Corriente Deuda LP", values: ["", "", "", ""], editable: true },
-    { category: "Proveedores", values: [497, 505, "5002", ""], editable: true },
-    { category: "Otros Pasivos Corrientes", values: [6997, 8864, "6421", ""], editable: true },
+    { category: "Proveedores", values: ["", "", "", ""], editable: true },
+    { category: "Otros Pasivos Corrientes", values: ["", "", "", ""], editable: true },
     { category: "Total Pasivo Corriente", values: ["", "", "", ""], calculated: true },
-    { category: "Obligaciones Financieras LP", values: [235, 1924, "2377", ""], editable: true },
-    { category: "Otros Pasivos No Corrientes", values: [454, 444, "1017", ""], editable: true },
+    { category: "Obligaciones Financieras LP", values: ["", "", "", ""], editable: true },
+    { category: "Otros Pasivos No Corrientes", values: ["", "", "", ""], editable: true },
     { category: "Total Pasivos", values: ["", "", "", ""], calculated: true },
 
-    { category: "Capital Pagado", values: [990, 990, "990", ""], editable: true },
+    { category: "Capital Pagado", values: ["", "", "", ""], editable: true },
     { category: "Prima En Colocacion De Acciones", values: ["", "", "", ""], editable: true },
-    { category: "Otros Superávit de Capital", values: ["", 557, "", ""], editable: true },
-    { category: "Efectos Adopción Primera Vez (NIIF)", values: [187, 187, "782", ""], editable: true },
-    { category: "Reserva Legal", values: [495, 495, "495", ""], editable: true },
+    { category: "Otros Superávit de Capital", values: ["", "", "", ""], editable: true },
+    { category: "Efectos Adopción Primera Vez (NIIF)", values: ["", "", "", ""], editable: true },
+    { category: "Reserva Legal", values: ["", "", "", ""], editable: true },
     { category: "Otras Reservas", values: ["", "", "", ""], editable: true },
     { category: "Ajustes Otro Resultado Integral", values: ["", "", "", ""], editable: true },
     { category: "Ajustes Inv.Disp.Venta / Valorizaciones ", values: ["", "", "", ""], editable: true },
-    { category: "Utilidades Retenidas", values: [999, 1773, "4192", ""], editable: true },
-    { category: "Utilidades del Periodo", values: [567, 746, "1522", ""], editable: true },
+    { category: "Utilidades Retenidas", values: ["", "", "", ""], editable: true },
+    { category: "Utilidades del Periodo", values: ["", "", "", ""], editable: true },
     { category: "Total Patrimonio", values: ["", "", "", ""], calculated: true },
     { category: "Total Pasivo + Patrimonio", values: ["", "", "", ""], calculated: true },
 
@@ -55,9 +59,12 @@ export default function EstadoFinanciero() {
     const [data, setData] = useState(initialData);
     const [calculado, setCalculado] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [isSaveEnabled, setIsSaveEnabled] = useState(false); // Estado para habilitar/deshabilitar el botón "Guardar"
     const router = useRouter();
-    const { id } = useParams();
-    const { years, selectedYears, resetYears } = useYears();
+    const params = useParams();
+    const id = params?.id || '';
+    const { years, selectedYears, resetYears, dataEstadoR,setDataEstadoR,clearDataEstadoR,añadirDataEstadoR } = useYears();
+    const partialMonth = localStorage.isPartial ? Number(localStorage.month) : null; // Obtener el mes parcial de localStorage
 
     const formatNumber = (value) => {
         return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
@@ -139,6 +146,19 @@ export default function EstadoFinanciero() {
         });
     };
 
+    const validateDifferences = () => {
+        const differenceRow = data.find(row => row.category === "Diferencia");
+        if (differenceRow) {
+            const differencesValid = differenceRow.values.every(value => {
+                const numericValue = parseFloat(value) || 0;
+                return numericValue >= -5 && numericValue <= 0;
+            });
+            setIsSaveEnabled(differencesValid && calculado); // Habilitar solo si las diferencias son válidas y se ha calculado
+        } else {
+            setIsSaveEnabled(false); // Deshabilitar si no existe la categoría "Diferencia"
+        }
+    };
+
     const handleChange = (index, colIndex, value) => {
         const rawValue = parseNumber(value);
         let newData = data.map((row, rowIdx) => {
@@ -152,16 +172,23 @@ export default function EstadoFinanciero() {
         });
 
         setData(newData);
+        validateDifferences(); // Validar diferencias después de cada cambio
     };
 
     const handleCalculate = () => {
-        setData(calculateData(data));
-        setCalculado(true);
+        const updatedData = calculateData(data);
+        setData(updatedData); // Actualiza el estado de `data`
+        setCalculado(true); // Marca como calculado
     };
     
     const saveDataToDatabase = async (data) => {
         const response = await createBalance(JSON.stringify(data));
         await updateCreditRequest(id, JSON.stringify({ Balance: 1 }));
+        return response;
+    };
+
+    const saveDataIndicadores = async (data) => {
+        const response = await createIndicadores(JSON.stringify(data));
         return response;
     };
 
@@ -171,38 +198,73 @@ export default function EstadoFinanciero() {
             const formattedData = data.map((row, rowIndex) => ({
                 category: row.category,
                 Cliente_id: id ? parseNumber(id) : null,
-                idcategory: parseNumber(2 +''+ rowIndex),
+                idcategory: `2${rowIndex}`,
                 values: row.values
                     .map((value, index) => ({
                         year: years[index],  // Año basado en el contexto
-                        value: Number(value),
+                        value: Number(value) || 0,
                     }))
                     .filter(entry => selectedYears[entry.year]) // Filtra solo los años seleccionados
             }));
-            const response = await saveDataToDatabase(formattedData);
-            if (response.status === 200) {
+            debugger;
+            const mysqlData = dataEstadoR.concat(formattedData)
+            const Indicadores = createDataIndicadores(mysqlData,selectedYears,years,id,partialMonth);
+          const responseBalance = await saveDataToDatabase(mysqlData);
+          const responseIndicadores = await saveDataIndicadores(Indicadores);
+         if (responseBalance.status === 200 && responseIndicadores.status === 200) {
                 setCalculado(false);
                 setLoading(false);
                 resetYears();
-                router.push('/Creditos');
-            } else {
-                alert('Error saving data');
-            }
-            //alert('Data saved successfully');
+                clearDataEstadoR();
+                const responsegetProdCupo = await getProdCupo(id);
+                toast.success("Datos guardados exitosamente...", {
+                    position: "bottom-right"
+                });
+              router.push('/Creditos');
+          } else {
+                toast.error("Ocurrio un error...", {
+                    position: "bottom-right"
+                });
+           }
+           // alert('Data saved successfully');
         } catch (error) {
             console.error('Error saving data:', error);
-            alert('Error saving data');
-            setCalculado(false);
+            toast.error("Ocurrio un error...", {
+                position: "bottom-right"
+            });
+           setCalculado(false);
         } finally {
             setCalculado(false);
             resetYears();
-            
+            localStorage.removeItem("isPartial");
+            localStorage.removeItem("month");
         }
     };
 
+    // Ejecutar la validación cada vez que `data` cambie
+    React.useEffect(() => {
+        validateDifferences();
+    }, [data]);
+
     return (
         <div className="overflow-x-auto p-4">
-            {loading && (
+           {
+                <Toaster
+                    position="top-center"
+                    richColors
+                    closeButton={false}
+                    expand={false}
+                    toastOptions={{
+                        className: "bg-green-500 text-white",
+                        duration: 3000,
+                        style: {
+                            background: "#4CAF50",
+                            color: "#fff",
+                        },
+                    }}
+                />
+           }
+            {/* {loading && (
                 <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50">
                     <div className="bg-white p-4 rounded shadow-lg">
                         <Progress 
@@ -212,6 +274,17 @@ export default function EstadoFinanciero() {
                         <p className="text-center mt-2">Guardando datos...</p>
                     </div>
                 </div>
+            )} */}
+            {loading && toast.message(
+                'Guardando datos...', 
+                { 
+                    position: 'bottom-right', 
+                    duration: 2000,
+                    style: {
+                        background: "#F0F4FF", // Light blue color for a "saving data" feel
+                        color: "#000000",
+                    } 
+                }
             )}
             <Table className="min-w-full border border-gray-100">
                 <thead>
@@ -289,7 +362,7 @@ export default function EstadoFinanciero() {
                 <Button 
                     onClick={handleSave} 
                     className="bg-green-500 text-white"
-                    disabled = {!calculado}
+                    disabled={!isSaveEnabled} // Deshabilitar si las diferencias no son válidas
                 >
                     
                         Guardar

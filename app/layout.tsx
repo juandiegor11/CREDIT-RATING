@@ -1,7 +1,11 @@
+'use client';
+
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Pompiere, Poppins } from "next/font/google";
 import "./globals.css";
-import { Toaster } from "sonner";
+import { AuthProvider } from "@/context/AuthContext";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { usePathname } from "next/navigation";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,24 +22,30 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "CRC",
-  description: "Credit Risk Rating for Companies",
-};
+const PUBLIC_ROUTES = ["/Login"]; // Define las rutas públicas aquí
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const pathname = usePathname(); // Obtiene la ruta actual
+
+  const isPublicRoute = pathname ? PUBLIC_ROUTES.includes(pathname) : false; // Verifica si la ruta es pública
+
   return (
     <html lang="en">
       <body
-       // className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-       className={poppins.className}
+        // className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={poppins.className}
       >
-        {children}
-        
+        <AuthProvider>
+          {isPublicRoute ? (
+            children // No aplica ProtectedRoute en rutas públicas
+          ) : (
+            <ProtectedRoute>{children}</ProtectedRoute>
+          )}
+        </AuthProvider>
       </body>
     </html>
   );

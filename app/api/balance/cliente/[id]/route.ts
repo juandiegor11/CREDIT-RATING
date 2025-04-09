@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { deleteBalanceByClient } from '../../../../../services/requests/balances';
+import { deleteBalanceByClient } from '../../../../../services/requests/indicadores';
 
 
 export async function DELETE(req: Request, { params }) {
